@@ -1,0 +1,35 @@
+{
+    "version": 2,
+    "commands": [
+        {
+            "id": "yskeno.wwisestatebrowser.open",
+            "displayName": "Open WwiseStateBrowser",
+            "defaultShortcut": "",
+            "program": "${CurrentCommandDirectory}\\my_command.exe",
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "args": "",
+            "cwd": "",
+            "contextMenu": {
+                "visibleFor": "Project"
+            },
+            "mainMenu": {
+                "basePath": "WwiseUtility"
+            }
+        },
+        {
+            "id": "yskeno.wwiseauthoringutility.connect",
+            "displayName": "Connect/Disconnect to Localhost",
+            "defaultShortcut": "Alt+H",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility.exe",
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "args": "",
+            "cwd": "",
+            "contextMenu": {
+                "visibleFor": "Project"
+            },
+            "mainMenu": {
+                "basePath": "WwiseUtility"
+            }
+        }
+    ]
+}
