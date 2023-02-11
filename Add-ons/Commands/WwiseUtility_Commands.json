@@ -1,0 +1,53 @@
+{
+    "version": 2,
+    "commands": [
+        {
+            "id": "wwiseutility.wwiseauthoringutility.001.connecttolocalhost",
+            "displayName": "Connect/Disconnect to Localhost",
+            "defaultShortcut": "Alt+H",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility.exe",
+            "args": "remote",
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "redirectOutputs": true,
+            "mainMenu": {
+                "basePath": "WwiseUtility"
+            }
+        },
+        {
+            "id": "wwiseutility.wwiseauthoringutility.002.autorenamecontainers",
+            "displayName": "Auto rename containers",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility.exe",
+            "args": "rename ${id}",
+            "defaultShortcut": "Alt+R",
+            "redirectOutputs": true,
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "contextMenu": {
+                "basePath": "WwiseUtility",
+                "visibleFor": "BlendContainer,MusicPlaylistContainer,MusicSwitchContainer,RandomSequenceContainer,SwitchContainer"
+            }
+        },
+        {
+            "id": "wwiseutility.wwiseauthoringutility.003.autoassignswitchcontainer",
+            "displayName": "Auto assign to Switch/State",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility.exe",
+            "args": "switch ${id}",
+            "defaultShortcut": "Alt+W",
+            "redirectOutputs": true,
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "contextMenu": {
+                "basePath": "WwiseUtility",
+                "visibleFor": "SwitchContainer"
+            }
+        },
+        {
+            "id": "wwiseutility.z.help",
+            "displayName": "Help",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility.exe",
+            "args": "help",
+            "redirectOutputs": false,
+            "mainMenu": {
+                "basePath": "WwiseUtility"
+            }
+        }
+    ]
+}
