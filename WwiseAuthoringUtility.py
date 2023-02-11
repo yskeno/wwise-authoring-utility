@@ -55,7 +55,7 @@ def main():
                 waapi_thread = threading.Thread(
                     target=client.connect_to_localhost, args=(window,))
                 waapi_thread.start()
-                window.show_window()
+                window.show_progress_window()
             elif sys.argv[1] == 'rename':
                 waapi_thread = threading.Thread(
                     target=client.auto_rename_container, args=(window, *sys.argv[2:]))

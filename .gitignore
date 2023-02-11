@@ -130,5 +130,8 @@ dmypy.json
 
 # VSCode
 wwise-authoring-utility.code-workspace
-.vscode/tasks.json
-.vscode/launch.json
+.vscode
+.vscode/
+
+# User
+requirements_all.txt

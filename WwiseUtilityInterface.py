@@ -135,3 +135,7 @@ class WwiseUtilityClient(WaapiClient):
             window.show_warning(
                 'Partially Complete', f'Finished but following object(s) wasn\'t assigned:\n No common words between object and state.\n{failed_results}')
         window.after_idle(window.process_complete)
+
+    def auto_trim_wavefile(self, window, *guid):
+        # TODO:Write function.
+        pass

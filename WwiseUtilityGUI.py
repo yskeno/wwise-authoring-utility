@@ -17,11 +17,15 @@ class MainWindow(tkinter.Tk):
         self.rowconfigure(0, weight=1)
         self.attributes('-topmost', 1)
 
-        self.__process_name = tkinter.StringVar(value='Connecting to Wwise...')
+        self.__process_name = tkinter.StringVar(value='WAAPI')
+        self.__progress_rate = tkinter.IntVar(value=0)
+
+        self.withdraw()
+
+    def show_progress_window(self):
         self.lbl_process = ttk.Label(textvariable=self.__process_name)
         self.lbl_process.grid(row=0, column=0, sticky=("NESW"))
 
-        self.__progress_rate = tkinter.IntVar(value=0)
         self.prog_bar = ttk.Progressbar(self,
                                         maximum=100,
                                         variable=self.__progress_rate,
@@ -33,8 +37,7 @@ class MainWindow(tkinter.Tk):
         btn_cancel.grid(row=2, column=0)
 
         self.protocol("WM_DELETE_WINDOW", self.btn_cancel_pressed)
-
-        self.withdraw()
+        self.deiconify()
 
     def btn_cancel_pressed(self):
         print("btn_cancel_pressed")
@@ -42,10 +45,7 @@ class MainWindow(tkinter.Tk):
             self.client.disconnect()
         self.quit()
 
-    def show_window(self):
-        self.deiconify()
-
-    def hide_window(self):
+    def _hide_window(self):
         self.withdraw()
 
     def show_simple_info(self, title, message):
@@ -54,7 +54,7 @@ class MainWindow(tkinter.Tk):
 
     def show_warning(self, title, message):
         print(f"WARNING: {title}: {message}")
-        self.hide_window()
+        self._hide_window()
         tkinter.messagebox.showwarning(title, message, parent=self)
         if self.client is not None:
             self.client.disconnect()
@@ -62,7 +62,7 @@ class MainWindow(tkinter.Tk):
 
     def show_error(self, title, message):
         print(f"ERROR: {title}: {message}")
-        self.hide_window()
+        self._hide_window()
         tkinter.messagebox.showerror(title, message, parent=self)
         if self.client is not None:
             self.client.disconnect()
