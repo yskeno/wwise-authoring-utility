@@ -1,0 +1,10 @@
+autobahn==23.1.1
+autopep8==2.0.1
+cffi==1.15.1
+cryptography==39.0.0
+hyperlink==21.0.0
+idna==3.4
+pycodestyle==2.10.0
+pycparser==2.21
+txaio==23.1.1
+waapi-client==0.6

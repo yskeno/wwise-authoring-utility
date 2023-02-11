@@ -1,63 +1,82 @@
-from waapi import WaapiClient, CannotConnectToWaapiException
-import argparse
+import sys
+import threading
+
+from WwiseUtilityInterface import WwiseUtilityClient, CannotConnectToWaapiException
+import WwiseUtilityGUI
+
+help_text = """\
+usage: Wwise Authoring Utility help you to control Wwise.
+
+arguments:
+    remote  Connect to / Disconnect from Localhost console.
+            If found more than one Localhost, give priority to one not containing "edit" in console name.
+    rename  Auto rename containers by common prefix of children's name.
+            Incremental numbers at the end of name are allowed.
+                ex.) OK: NewRandomContainer -> Footsteps
+                            |- Footsteps_01
+                            |- Footsteps_02
+                            |- Footsteps_02
+                     NG: NewRundomContainer
+                            |- WeakFootsteps_01
+                            |- NormalFootsteps_01
+                            |- StrongFootsteps_01
+    switch  Auto assign object to Switch container.
+            It is necessary common words between object and State.
+            Also objects needs common prefix.
+                ex.)     |  Children's Name   | State Name |
+                     OK: | Footsteps_Rock_01  |    Rock    |
+                         | Footsteps_Wood_01  |    Wood    |
+                         | Footsteps_Metal_01 |    Metal   |
+                     NG: | Rock_Footsteps_01  |    Rock    |
+                         | Wood_Footsteps_01  |    Wood    |
+                         | Metal_Footsteps_01 |    Metal   |
+
+options:
+    help    show this help message and exit.\
+"""
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        usage="WwiseAuthoringUtility help you to control Wweise.", description="Add arg.",)
-    parser.add_argument(
-        "-r", "--remote", help="Connect/Disconnect to localhost.")
+    window = WwiseUtilityGUI.MainWindow()
+    if len(sys.argv) <= 1 or sys.argv[1] == 'help':
+        print(help_text)
+        window.show_simple_info(
+            'Wwise Authoring Utility', help_text)
+        window.quit()
+        return
 
-    # args = parser.parse_args()
-    # if args is None:
-    #     return
+    if sys.argv[1] == 'print':
+        print(sys.argv)
+        return
 
     try:
-        with WaapiClient() as client:
+        with WwiseUtilityClient() as client:
+            if sys.argv[1] == 'remote':
+                waapi_thread = threading.Thread(
+                    target=client.connect_to_localhost, args=(window,))
+                waapi_thread.start()
+                window.show_window()
+            elif sys.argv[1] == 'rename':
+                waapi_thread = threading.Thread(
+                    target=client.auto_rename_container, args=(window, *sys.argv[2:]))
+                waapi_thread.start()
+            elif sys.argv[1] == 'switch':
+                waapi_thread = threading.Thread(
+                    target=client.auto_assign_switch_container, args=(window, *sys.argv[2:]))
+                waapi_thread.start()
+            window.mainloop()
 
-            connect_to_localhost(client)
-
-    except CannotConnectToWaapiException:
-        print(
-            "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?")
+    except CannotConnectToWaapiException as e:
+        window.show_error("CannotConnectToWaapiException",
+                          f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?")
 
     except Exception as e:
-        print(str(e))
+        print(f'ERROR: {str(e)}')
+        window.show_error("ERROR", str(e))
 
-
-def connect_to_localhost(client):
-    connection_status = client.call(
-        "ak.wwise.core.remote.getConnectionStatus")
-    # --- Connect to Localhost ---
-    if connection_status.get('isConnected', None) == False:
-        available_consoles: dict = client.call(
-            "ak.wwise.core.remote.getAvailableConsoles")
-
-        # Search Localhosts.
-        local_consoles = [
-            item for item in available_consoles['consoles'] if item['host'] == "127.0.0.1"]
-        if len(local_consoles) == 0:
-            raise Exception('Localhost was not found.')
-
-        # Select Localhost to connect.
-        # If multiple Localhost was found, choose one not including "Edit"
-        target_console = {}
-        if len(local_consoles) == 1:
-            target_console = local_consoles[0]
-        else:
-            for local_console in local_consoles:
-                if local_console['appName'].lower() not in "edit":
-                    target_console = local_console
-                    break
-            if target_console == {}:
-                target_console = local_consoles[0]
-
-        client.call("ak.wwise.core.remote.connect", {
-                    'host': target_console.get('host', ""), 'appName': target_console.get('appName', "")})
-
-    # --- Disconnect from Localhost ---
-    else:
-        client.call("ak.wwise.core.remote.disconnect")
+    # finally:
+    #     if client != None:
+    #         client.disconnect()
 
 
 if __name__ == "__main__":
