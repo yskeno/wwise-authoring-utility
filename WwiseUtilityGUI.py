@@ -1,4 +1,6 @@
 #! python3
+import sys
+
 import tkinter
 import tkinter.messagebox
 import tkinter.ttk as ttk
@@ -13,6 +15,7 @@ class MainWindow(tkinter.Tk):
         self.client: WwiseUtilityClient = None
 
         self.title("Wwise Authoring Utility")
+        self.iconbitmap(sys.executable)
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         self.attributes('-topmost', 1)
