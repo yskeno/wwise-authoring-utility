@@ -5,7 +5,7 @@
             "id": "wwiseutility.wwiseauthoringutility.001.connecttolocalhost",
             "displayName": "Connect/Disconnect to Localhost",
             "defaultShortcut": "Alt+H",
-            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility.exe",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
             "args": "remote",
             "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
             "redirectOutputs": true,
@@ -16,7 +16,7 @@
         {
             "id": "wwiseutility.wwiseauthoringutility.002.autorenamecontainers",
             "displayName": "Auto rename containers",
-            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility.exe",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
             "args": "rename ${id}",
             "defaultShortcut": "Alt+R",
             "redirectOutputs": true,
@@ -29,7 +29,7 @@
         {
             "id": "wwiseutility.wwiseauthoringutility.003.autoassignswitchcontainer",
             "displayName": "Auto assign to Switch/State",
-            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility.exe",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
             "args": "switch ${id}",
             "defaultShortcut": "Alt+W",
             "redirectOutputs": true,
@@ -42,7 +42,7 @@
         {
             "id": "wwiseutility.z.help",
             "displayName": "Help",
-            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility.exe",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
             "args": "help",
             "redirectOutputs": false,
             "mainMenu": {

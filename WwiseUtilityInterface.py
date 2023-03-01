@@ -79,7 +79,7 @@ class WwiseUtilityClient(WaapiClient):
                                   "options": {"return": ['name']}})['return']
 
             names = list(map(lambda object: object['name'], children))
-            common_name = os.path.commonprefix(names).rstrip('_ -')
+            common_name = os.path.commonprefix(names).rstrip('_ -0')
 
             if not common_name:
                 container = self.call("ak.wwise.core.object.get",
