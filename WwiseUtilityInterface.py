@@ -16,6 +16,7 @@ class WwiseUtilityClient(WaapiClient):
             20, 'Get Connection Status...'))
         connection_status = self.call(
             'ak.wwise.core.remote.getConnectionStatus')
+
         # --- Connect to Localhost ---
         if connection_status.get('isConnected', None) == False:
             window.after_idle(lambda: window.set_current_process(
@@ -41,7 +42,7 @@ class WwiseUtilityClient(WaapiClient):
                 target_console = local_consoles[0]
             else:
                 for local_console in local_consoles:
-                    if local_console['appName'].lower() not in 'edit':
+                    if 'edit' not in local_console['appName'].lower():
                         target_console = local_console
                         break
                 else:
