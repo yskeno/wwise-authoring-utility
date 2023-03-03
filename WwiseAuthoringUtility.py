@@ -74,10 +74,6 @@ def main():
         print(f'ERROR: {str(e)}')
         window.show_error("ERROR", str(e))
 
-    # finally:
-    #     if client != None:
-    #         client.disconnect()
-
 
 if __name__ == "__main__":
     main()
