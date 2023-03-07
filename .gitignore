@@ -130,8 +130,6 @@ dmypy.json
 
 # VSCode
 wwise-authoring-utility.code-workspace
-.vscode
-.vscode/
 
 # User
 requirements_all.txt
