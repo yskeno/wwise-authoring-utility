@@ -35,8 +35,8 @@ class MainWindow(tkinter.Tk):
                                         mode="determinate")
         self.prog_bar.grid(row=1, column=0, sticky=("NESW"))
 
-        btn_cancel = ttk.Button(text="Cancel", command=self.btn_cancel_pressed)
-        btn_cancel.grid(row=2, column=0)
+        # btn_cancel = ttk.Button(text="Cancel", command=self.btn_cancel_pressed)
+        # btn_cancel.grid(row=2, column=0)
 
         self.protocol("WM_DELETE_WINDOW", self.btn_cancel_pressed)
         self.deiconify()
