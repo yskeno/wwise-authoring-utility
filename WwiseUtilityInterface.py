@@ -7,21 +7,11 @@ from waapi import WaapiClient, CannotConnectToWaapiException
 
 class WwiseUtilityClient(WaapiClient):
 
-    def waapi_call(self, func):
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                pass
-            finally:
-                self.disconnect()
-
     def _get_selected_objects_guid(self):
         selected = self.call("ak.wwise.ui.getSelectedObjects")['objects']
         return tuple(v for d in selected
                      for k, v in d.items() if k == 'id')
 
-    @waapi_call
     def connect_to_localhost(self, window):
         window.after_idle(lambda: window.set_current_process(
             20, 'Get Connection Status...'))
@@ -79,7 +69,8 @@ class WwiseUtilityClient(WaapiClient):
                 100, 'Disconnected.'))
             window.after_idle(window.process_complete)
 
-    @waapi_call
+        self.disconnect()
+
     def auto_rename_container(self, window, *guids):
         if len(guids) == 0:
             guids = self._get_selected_objects_guid()
@@ -108,8 +99,8 @@ class WwiseUtilityClient(WaapiClient):
             window.show_warning(
                 'Partially Complete', f'Complete but following container(s) wasn\'t renamed:\n No common prefix found.\n{failed_results}')
         window.after_idle(window.process_complete)
+        self.disconnect()
 
-    @waapi_call
     def auto_assign_switch_container(self, window, *guids):
         if len(guids) == 0:
             guids = self._get_selected_objects_guid()
@@ -150,6 +141,7 @@ class WwiseUtilityClient(WaapiClient):
             window.show_warning(
                 'Complete with Warning', f'Finished but following object(s) wasn\'t assigned:\n No common words between object and state.\n{failed_results}')
         window.after_idle(window.process_complete)
+        self.disconnect()
 
     def auto_trim_wavefile(self, window, *guid):
         # TODO:Write function.
