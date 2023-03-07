@@ -11,6 +11,7 @@ from WwiseUtilityInterface import WwiseUtilityClient
 class MainWindow(tkinter.Tk):
     def __init__(self):
         super().__init__()
+        self.withdraw()
 
         self.client: WwiseUtilityClient = None
 
@@ -22,8 +23,6 @@ class MainWindow(tkinter.Tk):
 
         self.__process_name = tkinter.StringVar(value='WAAPI')
         self.__progress_rate = tkinter.IntVar(value=0)
-
-        self.withdraw()
 
     def show_progress_window(self):
         self.lbl_process = ttk.Label(textvariable=self.__process_name)
@@ -48,7 +47,7 @@ class MainWindow(tkinter.Tk):
             self.client.disconnect()
         self.quit()
 
-    def _hide_window(self):
+    def hide_window(self):
         self.withdraw()
 
     def show_simple_info(self, title, message):
@@ -57,7 +56,7 @@ class MainWindow(tkinter.Tk):
 
     def show_warning(self, title, message):
         print(f"WARNING: {title}: {message}")
-        self._hide_window()
+        self.hide_window()
         tkinter.messagebox.showwarning(title, message, parent=self)
         if self.client is not None:
             self.client.disconnect()
@@ -65,7 +64,7 @@ class MainWindow(tkinter.Tk):
 
     def show_error(self, title, message):
         print(f"ERROR: {title}: {message}")
-        self._hide_window()
+        self.hide_window()
         tkinter.messagebox.showerror(title, message, parent=self)
         if self.client is not None:
             self.client.disconnect()

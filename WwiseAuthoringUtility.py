@@ -51,6 +51,7 @@ def main():
 
     try:
         with WwiseUtilityClient() as client:
+            window.client = client
             if sys.argv[1] == 'remote':
                 waapi_thread = threading.Thread(
                     target=client.connect_to_localhost, args=(window,))

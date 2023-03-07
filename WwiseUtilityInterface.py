@@ -49,7 +49,7 @@ class WwiseUtilityClient(WaapiClient):
                     target_console = local_consoles[0]
 
             window.after_idle(lambda: window.set_current_process(
-                85, 'Connect localhost...'))
+                85, 'Connect to localhost...'))
 
             self.call('ak.wwise.core.remote.connect', {
                 'host': target_console.get('host', ''), 'appName': target_console.get('appName', '')})
@@ -61,7 +61,7 @@ class WwiseUtilityClient(WaapiClient):
         # --- Disconnect from Localhost ---
         else:
             window.after_idle(lambda: window.set_current_process(
-                50, 'Disconnect remote pratform...'))
+                50, 'Disconnect from remote pratform...'))
 
             self.call('ak.wwise.core.remote.disconnect')
             window.after_idle(lambda: window.set_current_process(
