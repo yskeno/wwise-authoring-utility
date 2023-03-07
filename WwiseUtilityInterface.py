@@ -130,6 +130,8 @@ class WwiseUtilityClient(WaapiClient):
                 target_name = re.sub(
                     '[_ -]*[0-9]+$', '', child['name'].replace(common_name, ""))
                 for state in states:
+                    if state['name'] == 'None':
+                        break
                     if target_name in state['name']:
                         self.call('ak.wwise.core.switchContainer.addAssignment',
                                   {"child": child['id'], "stateOrSwitch": state['id']})
