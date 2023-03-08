@@ -7,6 +7,10 @@ from WwiseUtilityGUI import MainWindow
 
 
 class WwiseUtilityClient(WaapiClient):
+    # def __init__(self, url=None, allow_exception=False, callback_executor=...):
+    #     super().__init__(url, allow_exception, callback_executor)
+    #     self.subscribe(
+    #         "ak.wwise.core.project.preClosed", self.disconnect)
 
     def _get_selected_objects_guid(self, type=''):
         selected = self.call("ak.wwise.ui.getSelectedObjects", {
