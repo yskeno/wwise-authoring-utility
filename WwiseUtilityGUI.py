@@ -5,15 +5,13 @@ import tkinter
 import tkinter.messagebox
 import tkinter.ttk as ttk
 
-from WwiseUtilityInterface import WwiseUtilityClient
-
 
 class MainWindow(tkinter.Tk):
     def __init__(self):
         super().__init__()
         self.withdraw()
 
-        self.client: WwiseUtilityClient = None
+        self.client = None
 
         self.title("Wwise Authoring Utility")
         self.iconbitmap(sys.executable)
@@ -47,13 +45,13 @@ class MainWindow(tkinter.Tk):
         print(f"INFO: {title}: {message}")
         tkinter.messagebox.showinfo(title, message, parent=self)
 
-    def show_warning(self, title, message):
+    def result_warning(self, title, message):
         print(f"WARNING: {title}: {message}")
         self.withdraw()
         tkinter.messagebox.showwarning(title, message, parent=self)
         self.close_window()
 
-    def show_error(self, title, message):
+    def result_error(self, title, message):
         print(f"ERROR: {title}: {message}")
         self.withdraw()
         tkinter.messagebox.showerror(title, message, parent=self)

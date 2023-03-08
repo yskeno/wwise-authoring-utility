@@ -68,12 +68,12 @@ def main():
             window.mainloop()
 
     except CannotConnectToWaapiException as e:
-        window.show_error("CannotConnectToWaapiException",
+        window.result_error("CannotConnectToWaapiException",
                           f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?")
 
     except Exception as e:
         print(f'ERROR: {str(e)}')
-        window.show_error("ERROR", str(e))
+        window.result_error("ERROR", str(e))
 
 
 if __name__ == "__main__":
