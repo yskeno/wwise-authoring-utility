@@ -35,20 +35,13 @@ class MainWindow(tkinter.Tk):
                                         mode="determinate")
         self.prog_bar.grid(row=1, column=0, sticky=("NESW"))
 
-        # btn_cancel = ttk.Button(text="Cancel", command=self.btn_cancel_pressed)
-        # btn_cancel.grid(row=2, column=0)
-
-        self.protocol("WM_DELETE_WINDOW", self.btn_cancel_pressed)
+        self.protocol("WM_DELETE_WINDOW", self.close_window)
         self.deiconify()
 
-    def btn_cancel_pressed(self):
-        print("btn_cancel_pressed")
-        if self.client is not None:
-            self.client.disconnect()
-        self.quit()
-
-    def hide_window(self):
-        self.withdraw()
+    def set_current_process(self, progress_rate=0, process_name=''):
+        self.__process_name.set(process_name)
+        self.__progress_rate.set(progress_rate)
+        self.update()
 
     def show_simple_info(self, title, message):
         print(f"INFO: {title}: {message}")
@@ -56,27 +49,20 @@ class MainWindow(tkinter.Tk):
 
     def show_warning(self, title, message):
         print(f"WARNING: {title}: {message}")
-        self.hide_window()
+        self.withdraw()
         tkinter.messagebox.showwarning(title, message, parent=self)
-        if self.client is not None:
-            self.client.disconnect()
-        self.quit()
+        self.close_window()
 
     def show_error(self, title, message):
         print(f"ERROR: {title}: {message}")
-        self.hide_window()
+        self.withdraw()
         tkinter.messagebox.showerror(title, message, parent=self)
+        self.close_window()
+
+    def close_window(self):
         if self.client is not None:
             self.client.disconnect()
         self.quit()
-
-    def set_current_process(self, progress_rate=0, process_name=''):
-        self.__process_name.set(process_name)
-        self.__progress_rate.set(progress_rate)
-        self.update()
-
-    def process_complete(self):
-        self.after(500, lambda: self.quit())
 
 
 if __name__ == "__main__":

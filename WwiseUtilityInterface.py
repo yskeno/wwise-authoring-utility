@@ -7,10 +7,20 @@ from waapi import WaapiClient, CannotConnectToWaapiException
 
 class WwiseUtilityClient(WaapiClient):
 
-    def _get_selected_objects_guid(self):
-        selected = self.call("ak.wwise.ui.getSelectedObjects")['objects']
-        return tuple(v for d in selected
-                     for k, v in d.items() if k == 'id')
+    def _get_selected_objects_guid(self, type=''):
+        selected = self.call("ak.wwise.ui.getSelectedObjects", {
+            'options': {'return': ['id', 'name', 'type']}})['objects']
+        if type == '':
+            return tuple(v for d in selected for k, v in d.items() if k == 'id')
+        else:
+            return tuple(v for d in selected if d['type'] == type
+                         for k, v in d.items() if k == 'id')
+
+    def _get_name_from_guid(self, guids):
+        objects = self.call("ak.wwise.core.object.get",
+                            {"from": {"id": guids},
+                             "options": {"return": ['name']}})['return']
+        return [obj['name'] for obj in objects]
 
     def connect_to_localhost(self, window):
         window.after_idle(lambda: window.set_current_process(
@@ -32,6 +42,7 @@ class WwiseUtilityClient(WaapiClient):
                 item for item in available_consoles['consoles'] if item['host'] == '127.0.0.1']
             if len(local_consoles) == 0:
                 window.show_error('Error', 'Localhost was not found.')
+                self.disconnect()
                 return
 
             # Select Localhost to connect.
@@ -51,36 +62,33 @@ class WwiseUtilityClient(WaapiClient):
 
             window.after_idle(lambda: window.set_current_process(
                 85, 'Connect to localhost...'))
-
             self.call('ak.wwise.core.remote.connect', {
                 'host': target_console.get('host', ''), 'appName': target_console.get('appName', '')})
-
             window.after_idle(lambda: window.set_current_process(
                 100, 'Connected.'))
-            window.after_idle(window.process_complete)
 
         # --- Disconnect from Localhost ---
         else:
             window.after_idle(lambda: window.set_current_process(
                 50, 'Disconnect from remote pratform...'))
-
             self.call('ak.wwise.core.remote.disconnect')
             window.after_idle(lambda: window.set_current_process(
                 100, 'Disconnected.'))
-            window.after_idle(window.process_complete)
 
         self.disconnect()
 
-    def auto_rename_container(self, window, *guids):
-        if len(guids) == 0:
-            guids = self._get_selected_objects_guid()
+    def auto_rename_container(self, window):
+        guids = self._get_selected_objects_guid()
 
-        failed_results = []
+        failed_ids = set()
         for guid in guids:
             children = self.call("ak.wwise.core.object.get",
                                  {"from": {"id": [guid]},
                                   "transform": [{"select": ['children']}],
                                   "options": {"return": ['name']}})['return']
+            if children is None:
+                failed_ids.append(guid)
+                continue
 
             names = list(map(lambda object: object['name'], children))
             common_name = os.path.commonprefix(names).rstrip('_ -0')
@@ -89,28 +97,31 @@ class WwiseUtilityClient(WaapiClient):
                 container = self.call("ak.wwise.core.object.get",
                                       {"from": {"id": [guid]},
                                        "options": {"return": ['name']}})['return']
-                failed_results.append(container[0]['name'])
+                failed_ids.append(container[0]['name'])
                 continue
 
             self.call("ak.wwise.core.object.setName", {
                       "object": guid, "value": common_name})
 
-        if len(failed_results) > 0:
+        if len(failed_ids) > 0:
             window.show_warning(
-                'Partially Complete', f'Complete but following container(s) wasn\'t renamed:\n No common prefix found.\n{failed_results}')
-        window.after_idle(window.process_complete)
-        self.disconnect()
+                'Partially Complete', f'Complete but following container(s) wasn\'t renamed:\n No common prefix found.\n{failed_ids}')
+        window.close_window()
 
-    def auto_assign_switch_container(self, window, *guids):
-        if len(guids) == 0:
-            guids = self._get_selected_objects_guid()
+    def auto_assign_switch_container(self, window):
+        guids = self._get_selected_objects_guid(type='SwitchContainer')
 
-        failed_results = []
+        failed_ids = set()
         for guid in guids:
+            isassigned = False
             stategroup = self.call("ak.wwise.core.object.get",
                                    {"from": {"id": [guid]},
                                     "options": {"return": ['@SwitchGroupOrStateGroup']}}
                                    )['return'][0]['@SwitchGroupOrStateGroup']
+            if stategroup is None or stategroup['id'] == '{00000000-0000-0000-0000-000000000000}':
+                failed_ids.add(guid)
+                continue
+
             states = self.call("ak.wwise.core.object.get",
                                {"from": {"id": [stategroup['id']]},
                                 "transform": [{"select": ['children']}],
@@ -122,28 +133,46 @@ class WwiseUtilityClient(WaapiClient):
                                   "transform": [{"select": ['children']}],
                                   "options": {"return": ['id', 'name']}}
                                  )['return']
+
             common_name = os.path.commonprefix(
                 list(map(lambda object: object['name'], children)))
-            common_name = common_name[:common_name.rfind('_ -')]
+            if not common_name:
+                failed_ids.add(guid)
+                continue
+            if not common_name.endswith(('_', ' ', '-')):
+                common_name = common_name[:common_name.rfind('_ -')]
+
+            assignments = self.call(
+                'ak.wwise.core.switchContainer.getAssignments', {'id': guid})['return']
 
             for child in children:
                 target_name = re.sub(
                     '[_ -]*[0-9]+$', '', child['name'].replace(common_name, ""))
                 for state in states:
                     if state['name'] == 'None':
-                        break
+                        continue
                     if target_name in state['name']:
-                        self.call('ak.wwise.core.switchContainer.addAssignment',
-                                  {"child": child['id'], "stateOrSwitch": state['id']})
-                        break
-                else:
-                    failed_results.append(child['name'])
+                        for assignment in assignments:
+                            if assignment['child'] == child['id'] and assignment['stateOrSwitch'] == state['id']:
+                                break
+                        else:
+                            self.call('ak.wwise.core.switchContainer.addAssignment',
+                                      {"child": child['id'], "stateOrSwitch": state['id']})
+                            isassigned = True
+                            continue
+            if not isassigned:
+                failed_ids.add(guid)
 
-        if len(failed_results) > 0:
-            window.show_warning(
-                'Complete with Warning', f'Finished but following object(s) wasn\'t assigned:\n No common words between object and state.\n{failed_results}')
-        window.after_idle(window.process_complete)
-        self.disconnect()
+        if len(failed_ids) > 0:
+            if len(failed_ids) == len(guids):
+                window.show_error(
+                    'Switch Assignment Incomplete', f"Could not assign object(s):\n\n Check SwitchContainer's State/Switch Group\n and use common words between object and state.")
+            else:
+                failed_names = '\n'.join(
+                    self._get_name_from_guid(list(failed_ids)))
+                window.show_warning(
+                    'Complete with Warning', f"Finished but following object(s) wasn't assigned:\n\n{failed_names}")
+        window.close_window()
 
     def auto_trim_wavefile(self, window, *guid):
         # TODO:Write function.

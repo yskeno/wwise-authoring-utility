@@ -59,11 +59,11 @@ def main():
                 window.show_progress_window()
             elif sys.argv[1] == 'rename':
                 waapi_thread = threading.Thread(
-                    target=client.auto_rename_container, args=(window, *sys.argv[2:]))
+                    target=client.auto_rename_container, args=(window,))
                 waapi_thread.start()
             elif sys.argv[1] == 'switch':
                 waapi_thread = threading.Thread(
-                    target=client.auto_assign_switch_container, args=(window, *sys.argv[2:]))
+                    target=client.auto_assign_switch_container, args=(window,))
                 waapi_thread.start()
             window.mainloop()
 
