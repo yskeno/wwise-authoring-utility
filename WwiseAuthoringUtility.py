@@ -1,3 +1,5 @@
+#! python3.7
+
 import sys
 import threading
 
@@ -51,25 +53,22 @@ def main():
 
     try:
         with WwiseUtilityClient() as client:
-            window.client = client
+            waapi_thread: threading.Thread = None
             if sys.argv[1] == 'remote':
                 waapi_thread = threading.Thread(
-                    target=client.connect_to_localhost, args=(window,))
-                waapi_thread.start()
-                window.show_progress_window()
+                    target=client.connect_to_localhost, kwargs={'window': window, })
             elif sys.argv[1] == 'rename':
                 waapi_thread = threading.Thread(
-                    target=client.auto_rename_container, args=(window,))
-                waapi_thread.start()
+                    target=client.auto_rename_container, kwargs={'window': window, })
             elif sys.argv[1] == 'switch':
                 waapi_thread = threading.Thread(
-                    target=client.auto_assign_switch_container, args=(window,))
-                waapi_thread.start()
+                    target=client.auto_assign_switch_container, kwargs={'window': window, })
+            waapi_thread.start()
             window.mainloop()
 
     except CannotConnectToWaapiException as e:
         window.result_error("CannotConnectToWaapiException",
-                          f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?")
+                            f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?")
 
     except Exception as e:
         print(f'ERROR: {str(e)}')

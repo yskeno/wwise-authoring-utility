@@ -1,4 +1,3 @@
-#! python3
 import sys
 
 import tkinter
@@ -10,8 +9,6 @@ class MainWindow(tkinter.Tk):
     def __init__(self):
         super().__init__()
         self.withdraw()
-
-        self.client = None
 
         self.title("Wwise Authoring Utility")
         self.iconbitmap(sys.executable)
@@ -42,24 +39,28 @@ class MainWindow(tkinter.Tk):
         self.update()
 
     def show_simple_info(self, title, message):
-        print(f"INFO: {title}: {message}")
+        print(f'INFO: {title}: {message}')
         tkinter.messagebox.showinfo(title, message, parent=self)
 
-    def result_warning(self, title, message):
-        print(f"WARNING: {title}: {message}")
+    def result_success(self, title, message):
         self.withdraw()
+        print(f'SUCCESS: {title}: {message}')
+        # tkinter.messagebox.showinfo(title, message)
+        self.close_window()
+
+    def result_warning(self, title, message):
+        self.withdraw()
+        print(f'WARNING: {title}: {message}')
         tkinter.messagebox.showwarning(title, message, parent=self)
         self.close_window()
 
     def result_error(self, title, message):
-        print(f"ERROR: {title}: {message}")
         self.withdraw()
+        print(f'ERROR: {title}: {message}')
         tkinter.messagebox.showerror(title, message, parent=self)
         self.close_window()
 
     def close_window(self):
-        if self.client is not None:
-            self.client.disconnect()
         self.quit()
 
 

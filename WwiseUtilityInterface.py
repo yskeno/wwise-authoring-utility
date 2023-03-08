@@ -1,16 +1,37 @@
-#! python3
 import os
 import re
 
-from waapi import WaapiClient, CannotConnectToWaapiException
+from waapi import WaapiClient, CannotConnectToWaapiException, WaapiRequestFailed
 from WwiseUtilityGUI import MainWindow
 
 
 class WwiseUtilityClient(WaapiClient):
-    # def __init__(self, url=None, allow_exception=False, callback_executor=...):
-    #     super().__init__(url, allow_exception, callback_executor)
-    #     self.subscribe(
-    #         "ak.wwise.core.project.preClosed", self.disconnect)
+    @staticmethod
+    def waapi_call(func):
+        def wrapper(self, *args, **kwargs):
+            gui: MainWindow = None
+            if kwargs['window']:
+                gui = kwargs.pop('window')
+
+            try:
+                func(self, *args, **kwargs)
+                gui.result_success('Complete', f'Complete successfully.')
+            except CannotConnectToWaapiException as e:
+                gui.result_error('CannotConnectToWaapiException',
+                                 f'{str(e)}\nIs Wwise running and Wwise Authoring API enabled?')
+            except WaapiRequestFailed as e:
+                gui.result_error('WaapiRequestFailed', f'{e}')
+            except RuntimeError as e:
+                gui.result_error('RuntimeError', f'{e}')
+            except RuntimeWarning as e:
+                gui.result_warning('RuntimeWarning', f'{e}')
+            except Exception as e:
+                import traceback
+                gui.result_error('Error', f'{e}\n\n{traceback.format_exc()}')
+            finally:
+                self.disconnect()
+                gui.close_window()
+        return wrapper
 
     def _get_selected_objects_guid(self, type=''):
         selected = self.call("ak.wwise.ui.getSelectedObjects", {
@@ -27,7 +48,9 @@ class WwiseUtilityClient(WaapiClient):
                              "options": {"return": ['name']}})['return']
         return tuple(obj['name'] for obj in objects)
 
+    @waapi_call
     def connect_to_localhost(self, window: MainWindow):
+        window.show_progress_window()
         window.after_idle(lambda: window.set_current_process(
             20, 'Get Connection Status...'))
         connection_status: dict = self.call(
@@ -46,8 +69,7 @@ class WwiseUtilityClient(WaapiClient):
             local_consoles = [
                 item for item in available_consoles['consoles'] if item['host'] == '127.0.0.1']
             if len(local_consoles) == 0:
-                window.show_error('Error', 'Localhost was not found.')
-                return
+                raise RuntimeError('Localhost was not found.')
 
             # Select Localhost to connect.
             # If multiple Localhost was found, choose one not including 'Edit'
@@ -79,9 +101,8 @@ class WwiseUtilityClient(WaapiClient):
             window.after_idle(lambda: window.set_current_process(
                 100, 'Disconnected.'))
 
-        window.close_window()
-
-    def auto_rename_container(self, window: MainWindow):
+    @waapi_call
+    def auto_rename_container(self):
         guids = self._get_selected_objects_guid()
 
         failed_ids = set()
@@ -105,17 +126,16 @@ class WwiseUtilityClient(WaapiClient):
 
         if len(failed_ids) > 0:
             if len(failed_ids) == len(guids):
-                window.result_error(
-                    'Auto rename failed', f"Could not rename object(s):\n\n Check using common words between children's object.")
+                raise RuntimeError(
+                    f'Auto rename failed:\n\n Could not rename object(s).\n Check using common words between children\'s object.')
             else:
-                failed_names = '\n'.join(
+                failed_names = '\n    '.join(
                     self._get_name_from_guid(tuple(failed_ids)))
-                window.result_warning(
-                    'Complete with Warning', f"Complete but following container(s) wasn\'t renamed:\n\n{failed_names}")
-        else:
-            window.close_window()
+                raise RuntimeWarning(
+                    f'Complete with Warning.\n\n Following container(s) wasn\'t renamed:\n    {failed_names}')
 
-    def auto_assign_switch_container(self, window: MainWindow):
+    @waapi_call
+    def auto_assign_switch_container(self):
         guids = self._get_selected_objects_guid(type='SwitchContainer')
 
         failed_ids = set()
@@ -172,15 +192,13 @@ class WwiseUtilityClient(WaapiClient):
 
         if len(failed_ids) > 0:
             if len(failed_ids) == len(guids):
-                window.result_error(
-                    'Switch Assignment Not Complete', f"Could not assign object(s):\n\n Check SwitchContainer's State/Switch Group\n and use common words between object and state.")
+                raise RuntimeError(
+                    f'Could not assign object(s):\n\n Check setting SwitchContainer\'s Switch \n and use common words between object and switch.')
             else:
-                failed_names = '\n'.join(
+                failed_names = '\n    '.join(
                     self._get_name_from_guid(tuple(failed_ids)))
-                window.result_warning(
-                    'Complete with Warning', f"Finished but following object(s) wasn't assigned:\n\n{failed_names}")
-        else:
-            window.close_window()
+                raise RuntimeWarning(
+                    f'Complete with Warning.\n\n Following SwitchContainer(s) wasn\'t assigned:\n    {failed_names}')
 
     def custom_assign_switch_container(self, window):
         # TODO:Write function.
