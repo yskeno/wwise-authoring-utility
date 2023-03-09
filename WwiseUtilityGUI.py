@@ -15,6 +15,7 @@ class MainWindow(tkinter.Tk):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
         self.attributes('-topmost', 1)
+        self.protocol("WM_DELETE_WINDOW", self.close_window)
 
         self.__process_name = tkinter.StringVar(value='WAAPI')
         self.__progress_rate = tkinter.IntVar(value=0)
@@ -30,7 +31,6 @@ class MainWindow(tkinter.Tk):
                                         mode="determinate")
         self.prog_bar.grid(row=1, column=0, sticky=("NESW"))
 
-        self.protocol("WM_DELETE_WINDOW", self.close_window)
         self.deiconify()
 
     def set_current_process(self, progress_rate=0, process_name=''):

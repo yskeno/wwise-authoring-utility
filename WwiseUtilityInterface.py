@@ -57,19 +57,20 @@ class WwiseUtilityClient(WaapiClient):
             20, 'Get Connection Status...'))
         connection_status: dict = self.call(
             'ak.wwise.core.remote.getConnectionStatus')
+        print(f'*** ConnectionStatus= {connection_status}')
 
         # --- Connect to Localhost ---
         if connection_status.get('isConnected', None) == False:
             window.after_idle(lambda: window.set_current_process(
                 30, 'Get Available Consoles...'))
-            available_consoles: dict = self.call(
-                'ak.wwise.core.remote.getAvailableConsoles')
+            available_consoles: list = self.call(
+                'ak.wwise.core.remote.getAvailableConsoles')['consoles']
 
             # Search Localhosts.
             window.after_idle(lambda: window.set_current_process(
                 50, 'Search localhosts...'))
             local_consoles = [
-                item for item in available_consoles['consoles'] if item['host'] == '127.0.0.1']
+                console for console in available_consoles if console['host'] == '127.0.0.1']
             if len(local_consoles) == 0:
                 raise RuntimeError('Localhost was not found.')
 
@@ -77,7 +78,7 @@ class WwiseUtilityClient(WaapiClient):
             # If multiple Localhost was found, choose one not including 'Edit'
             window.after_idle(lambda: window.set_current_process(
                 70, 'Set target console...'))
-            target_console = {}
+            target_console: dict = {}
             if len(local_consoles) == 1:
                 target_console = local_consoles[0]
             else:
@@ -88,10 +89,11 @@ class WwiseUtilityClient(WaapiClient):
                 else:
                     target_console = local_consoles[0]
 
+            print(f'*** Connect to {target_console}')
             window.after_idle(lambda: window.set_current_process(
-                85, 'Connect to localhost...'))
+                85, f'Connect to {target_console["appName"]}...'))
             self.call('ak.wwise.core.remote.connect', {
-                'host': target_console.get('host', ''), 'appName': target_console.get('appName', '')})
+                'host': target_console['host'], 'appName': target_console['appName']})
             window.after_idle(lambda: window.set_current_process(
                 100, 'Connected.'))
 
@@ -105,23 +107,24 @@ class WwiseUtilityClient(WaapiClient):
 
     @waapi_call
     def auto_rename_container(self, window: MainWindow):
-        guids = self._get_selected_objects_guid()
+        guids: tuple = self._get_selected_objects_guid()
 
         failed_ids = set()
         for guid in guids:
-            children = self.call("ak.wwise.core.object.get",
-                                 {"from": {"id": [guid]},
-                                  "transform": [{"select": ['children']}],
-                                  "options": {"return": ['name']}})['return']
+            children: list = self.call("ak.wwise.core.object.get",
+                                       {"from": {"id": [guid]},
+                                        "transform": [{"select": ['children']}],
+                                        "options": {"return": ['name']}})['return']
             if children is None:
                 failed_ids.add(guid)
                 continue
 
             names = list(map(lambda object: object['name'], children))
-            common_name = os.path.commonprefix(names).rstrip('_ -0')
+            common_name: str = os.path.commonprefix(names).rstrip('_ -0')
             if not common_name:
                 failed_ids.add(guid)
                 continue
+            print(f'*** CommonName= {common_name}')
 
             self.call("ak.wwise.core.object.setName", {
                       "object": guid, "value": common_name})
@@ -133,49 +136,51 @@ class WwiseUtilityClient(WaapiClient):
             else:
                 failed_names = '\n    '.join(
                     self._get_name_from_guid(tuple(failed_ids)))
+                print(f'*** FailedName= {failed_names}')
                 raise RuntimeWarning(
                     f'Complete with Warning.\n\n Following container(s) wasn\'t renamed:\n    {failed_names}')
 
     @waapi_call
     def auto_assign_switch_container(self, window: MainWindow):
-        guids = self._get_selected_objects_guid(type='SwitchContainer')
+        guids: tuple = self._get_selected_objects_guid(type='SwitchContainer')
 
         failed_ids = set()
         for guid in guids:
             isassigned = False
-            stategroup = self.call("ak.wwise.core.object.get",
-                                   {"from": {"id": [guid]},
-                                    "options": {"return": ['@SwitchGroupOrStateGroup']}}
-                                   )['return'][0]['@SwitchGroupOrStateGroup']
+            stategroup: dict = self.call("ak.wwise.core.object.get",
+                                         {"from": {"id": [guid]},
+                                          "options": {"return": ['@SwitchGroupOrStateGroup']}}
+                                         )['return'][0]['@SwitchGroupOrStateGroup']
             if stategroup is None or stategroup['id'] == '{00000000-0000-0000-0000-000000000000}':
                 failed_ids.add(guid)
                 continue
 
-            states = self.call("ak.wwise.core.object.get",
-                               {"from": {"id": [stategroup['id']]},
-                                "transform": [{"select": ['children']}],
-                                "options": {"return": ['id', 'name']}}
-                               )['return']
+            states: list = self.call("ak.wwise.core.object.get",
+                                     {"from": {"id": [stategroup['id']]},
+                                      "transform": [{"select": ['children']}],
+                                      "options": {"return": ['id', 'name']}}
+                                     )['return']
 
-            children = self.call("ak.wwise.core.object.get",
-                                 {"from": {"id": [guid]},
-                                  "transform": [{"select": ['children']}],
-                                  "options": {"return": ['id', 'name']}}
-                                 )['return']
+            children: list = self.call("ak.wwise.core.object.get",
+                                       {"from": {"id": [guid]},
+                                        "transform": [{"select": ['children']}],
+                                        "options": {"return": ['id', 'name']}}
+                                       )['return']
 
-            common_name = os.path.commonprefix(
+            common_name: str = os.path.commonprefix(
                 list(map(lambda object: object['name'], children)))
             if not common_name:
                 failed_ids.add(guid)
                 continue
             if not common_name.endswith(('_', ' ', '-')):
                 common_name = common_name[:common_name.rfind('_ -')]
+            print(f'*** CommonName= {common_name}')
 
-            assignments = self.call(
+            assignments: list = self.call(
                 'ak.wwise.core.switchContainer.getAssignments', {'id': guid})['return']
 
             for child in children:
-                target_name = re.sub(
+                target_name: str = re.sub(
                     '[_ -]*[0-9]+$', '', child['name'].replace(common_name, ""))
                 for state in states:
                     if state['name'] == 'None':
