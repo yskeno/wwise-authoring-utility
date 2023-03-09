@@ -7,38 +7,33 @@ from WwiseUtilityGUI import MainWindow
 
 class WwiseUtilityClient(WaapiClient):
     @staticmethod
-    def waapi_call(gui=False):
-        def _waapi_call(func):
-            def wrapper(self, *args, **kwargs):
-                window: MainWindow = None
-                if kwargs['window']:
-                    if gui:
-                        window = kwargs['window']
-                    else:
-                        window = kwargs.pop('window')
+    def waapi_call(func):
+        def wrapper(self, *args, **kwargs):
+            window: MainWindow = None
+            if kwargs.get('window', None):
+                window = kwargs['window']
 
-                try:
-                    func(self, *args, **kwargs)
-                    window.result_success(
-                        'Complete', f'Complete successfully.')
-                except CannotConnectToWaapiException as e:
-                    window.result_error('CannotConnectToWaapiException',
-                                        f'{str(e)}\nIs Wwise running and Wwise Authoring API enabled?')
-                except WaapiRequestFailed as e:
-                    window.result_error('WaapiRequestFailed', f'{e}')
-                except RuntimeError as e:
-                    window.result_error('RuntimeError', f'{e}')
-                except RuntimeWarning as e:
-                    window.result_warning('RuntimeWarning', f'{e}')
-                except Exception as e:
-                    import traceback
-                    window.result_error(
-                        'Error', f'{e}\n\n{traceback.format_exc()}')
-                finally:
-                    self.disconnect()
-                    window.close_window()
-            return wrapper
-        return _waapi_call
+            try:
+                func(self, *args, **kwargs)
+                window.result_success(
+                    'Complete', f'Complete successfully.')
+            except CannotConnectToWaapiException as e:
+                window.result_error('CannotConnectToWaapiException',
+                                    f'{str(e)}\nIs Wwise running and Wwise Authoring API enabled?')
+            except WaapiRequestFailed as e:
+                window.result_error('WaapiRequestFailed', f'{e}')
+            except RuntimeError as e:
+                window.result_error('RuntimeError', f'{e}')
+            except RuntimeWarning as e:
+                window.result_warning('RuntimeWarning', f'{e}')
+            except Exception as e:
+                import traceback
+                window.result_error(
+                    'Error', f'{e}\n\n{traceback.format_exc()}')
+            finally:
+                self.disconnect()
+                window.close_window()
+        return wrapper
 
     def _get_selected_objects_guid(self, type=''):
         selected = self.call("ak.wwise.ui.getSelectedObjects", {
@@ -55,7 +50,7 @@ class WwiseUtilityClient(WaapiClient):
                              "options": {"return": ['name']}})['return']
         return tuple(obj['name'] for obj in objects)
 
-    @waapi_call(gui=True)
+    @waapi_call
     def connect_to_localhost(self, window: MainWindow):
         window.show_progress_window()
         window.after_idle(lambda: window.set_current_process(
@@ -109,7 +104,7 @@ class WwiseUtilityClient(WaapiClient):
                 100, 'Disconnected.'))
 
     @waapi_call
-    def auto_rename_container(self):
+    def auto_rename_container(self, window: MainWindow):
         guids = self._get_selected_objects_guid()
 
         failed_ids = set()
@@ -142,7 +137,7 @@ class WwiseUtilityClient(WaapiClient):
                     f'Complete with Warning.\n\n Following container(s) wasn\'t renamed:\n    {failed_names}')
 
     @waapi_call
-    def auto_assign_switch_container(self):
+    def auto_assign_switch_container(self, window: MainWindow):
         guids = self._get_selected_objects_guid(type='SwitchContainer')
 
         failed_ids = set()
