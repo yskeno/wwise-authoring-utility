@@ -9,10 +9,12 @@
             "args": [
                 "--clean",
                 "--onedir",
+                "--name",
+                "WwiseAuthoringUtility",
                 "--noconsole",
                 "--icon=.\\img\\WwiseAuthoringUtility.ico",
                 "--noconfirm",
-                "${workspaceFolder}\\WwiseAuthoringUtility.py",
+                "${workspaceFolder}\\Main.py",
             ],
             "group": "build",
         }
