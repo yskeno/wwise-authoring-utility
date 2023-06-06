@@ -8,6 +8,7 @@ from WwiseUtilityGUI import MainWindow
 class WwiseUtilityClient(WaapiClient):
     @staticmethod
     def waapi_call(func):
+        # Common Try/Except and termination process.
         def wrapper(self, *args, **kwargs):
             window: MainWindow = None
             if kwargs.get('window', None):
@@ -49,6 +50,12 @@ class WwiseUtilityClient(WaapiClient):
                             {"from": {"id": list(guids)},
                              "options": {"return": ['name']}})['return']
         return tuple(obj['name'] for obj in objects)
+
+    def _get_path_from_guid(self, guids: tuple):
+        objects = self.call("ak.wwise.core.object.get",
+                            {"from": {"id": list(guids)},
+                             "options": {"return": ['path']}})['return']
+        return tuple(obj['path'] for obj in objects)
 
     @waapi_call
     def connect_to_localhost(self, window: MainWindow):
@@ -205,11 +212,106 @@ class WwiseUtilityClient(WaapiClient):
                 failed_names = '\n    '.join(
                     self._get_name_from_guid(tuple(failed_ids)))
                 raise RuntimeWarning(
-                    f'Complete with Warning.\n\n Following SwitchContainer(s) wasn\'t assigned:\n    {failed_names}')
+                    f'Complete with Warning.\n\n Following SwitchContainer(s) not assigned:\n    {failed_names}')
 
-    def custom_assign_switch_container(self, window):
-        # TODO:Write function.
-        pass
+    def get_stateandswitch_info(self):
+        """Return State information.\n
+        Returns:
+            dict: State information.\n
+            {'StateGroup GUID': {'path': 'StateGroup Path',
+                                'child': ['State Name', 'State Name', ...]}
+        """
+        ret = {}
+        # Get All State/SwitchGroup Info.
+        group_list: list = self.call("ak.wwise.core.object.get", {
+            "from": {
+                "ofType": ["StateGroup", "SwitchGroup"]},
+            "options": {
+                "return": ["id", "path"]}
+        })['return']
+
+        for group in group_list:
+            ret[group['id']] = {'path': group['path']}
+
+            # Get All State/Switch Info from Each State/SwitchGroup.
+            child_list: list = self.call("ak.wwise.core.object.get", {
+                "from": {
+                    "id": [group['id']]},
+                "transform": [
+                    {"select": ["children"]},
+                    {"where": ["type:isIn", ["State", "Switch"]]}],
+                "options": {
+                    "return": ["id", "name"]}
+            })['return']
+
+            # Add Each State/Switch as List.
+            for child in child_list:
+                ret[group['id']].setdefault(
+                    'child', []).append(child['name'])
+
+        # Sort return dict by path.
+        sorted_ret = {}
+        for k, v in sorted(ret.items(), key=lambda x: x[1]['path']):
+            sorted_ret[k] = v
+
+        return sorted_ret
+
+    @waapi_call
+    def custom_assign_switch_container(self, window, stategrouptoassign: str, assigned_keywords: dict):
+        guids: tuple = self._get_selected_objects_guid(type='SwitchContainer')
+
+        failed_ids = set()
+        for guid in guids:
+            isassigned = False
+            stategroup: dict = self.call("ak.wwise.core.object.get",
+                                         {"from": {"id": [guid]},
+                                          "options": {"return": ['@SwitchGroupOrStateGroup']}}
+                                         )['return'][0]['@SwitchGroupOrStateGroup']
+            if stategroup is None or stategroup['id'] == '{00000000-0000-0000-0000-000000000000}' or stategroup['name'] != os.path.basename(stategrouptoassign):
+                failed_ids.add(guid)
+                continue
+
+            states: list = self.call("ak.wwise.core.object.get",
+                                     {"from": {"id": [stategroup['id']]},
+                                      "transform": [{"select": ['children']}],
+                                      "options": {"return": ['id', 'name']}}
+                                     )['return']
+
+            # {'child':'GUID'}
+            children: list = self.call("ak.wwise.core.object.get",
+                                       {"from": {"id": [guid]},
+                                        "transform": [{"select": ['children']}],
+                                        "options": {"return": ['id', 'name']}}
+                                       )['return']
+
+            assignments: list = self.call(
+                'ak.wwise.core.switchContainer.getAssignments', {'id': guid})['return']
+
+            for child in children:
+                for target_state, keyword in assigned_keywords.items():
+                    if keyword != '' and keyword in child['name']:
+                        for state in states:
+                            if target_state in state['name']:
+                                for assignment in assignments:
+                                    if assignment['child'] == child['id'] and assignment['stateOrSwitch'] == state['id']:
+                                        break
+                                else:
+                                    self.call('ak.wwise.core.switchContainer.addAssignment',
+                                              {"child": child['id'], "stateOrSwitch": state['id']})
+                                    isassigned = True
+                                    continue
+            if not isassigned:
+                failed_ids.add(guid)
+
+        if len(failed_ids) > 0:
+            if len(failed_ids) == len(guids):
+                raise RuntimeError(
+                    f'Could not assign object(s):\n\n Check State or Switch keyword setting.')
+            else:
+                failed_names = '\n    '.join(
+                    self._get_name_from_guid(tuple(failed_ids)))
+                raise RuntimeWarning(
+                    f'Complete with Warning.\n\n Following SwitchContainer(s) not assigned:\n    {failed_names}')
 
     def auto_trim_wavefile(self, window):
         # TODO:Write function.

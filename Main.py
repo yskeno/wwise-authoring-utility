@@ -1,4 +1,4 @@
-#! python3.7
+#! python3.9
 
 import sys
 import threading
@@ -38,6 +38,10 @@ options:
 """
 
 
+class InterruptedWAU(Exception):
+    pass
+
+
 def main():
     window = WwiseUtilityGUI.MainWindow()
     if len(sys.argv) <= 1 or sys.argv[1] == 'help':
@@ -63,15 +67,29 @@ def main():
             elif sys.argv[1] == 'switch_auto':
                 waapi_thread = threading.Thread(
                     target=client.auto_assign_switch_container, kwargs={'window': window, })
+            elif sys.argv[1] == 'switch_custom':
+                switch_info: dict = client.get_stateandswitch_info()
+                window.open_custom_switchassign_setting(switch_info)
+                window.mainloop()
+
+                if not window.assigned_keywords:
+                    raise InterruptedWAU('Not Assigned Switch/State Keywords.')
+                waapi_thread = threading.Thread(
+                    target=client.custom_assign_switch_container, kwargs={'window': window, 'stategrouptoassign': window.stategroup_name, 'assigned_keywords': window.assigned_keywords})
+            else:
+                raise Exception("Not valid sys.argv[1]")
+
             waapi_thread.start()
             window.mainloop()
+
+    except InterruptedWAU as e:
+        print(f'InterruptedWAU: {str(e)}')
 
     except CannotConnectToWaapiException as e:
         window.result_error("CannotConnectToWaapiException",
                             f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?")
 
     except Exception as e:
-        print(f'ERROR: {str(e)}')
         window.result_error("ERROR", str(e))
 
 

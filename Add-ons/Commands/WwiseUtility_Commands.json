@@ -40,6 +40,19 @@
             }
         },
         {
+            "id": "wwiseutility.wwiseauthoringutility.004.customassignswitchcontainer",
+            "displayName": "Auto assign to Switch/State",
+            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
+            "args": "switch_custom ${id}",
+            "defaultShortcut": "Alt+W",
+            "redirectOutputs": true,
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "contextMenu": {
+                "basePath": "WwiseUtility",
+                "visibleFor": "SwitchContainer"
+            }
+        },
+        {
             "id": "wwiseutility.z.help",
             "displayName": "Help",
             "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",

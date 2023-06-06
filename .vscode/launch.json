@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}\\Main.py",
             "args": [
-                "switch",
+                "switch_custom",
             ],
             "console": "integratedTerminal",
             "justMyCode": false,
