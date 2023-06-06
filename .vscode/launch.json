@@ -8,7 +8,7 @@
             "name": "Python: Main File",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}\\WwiseAuthoringUtility.py",
+            "program": "${workspaceFolder}\\Main.py",
             "args": [
                 "switch",
             ],

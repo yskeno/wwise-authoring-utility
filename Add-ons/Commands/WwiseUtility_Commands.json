@@ -30,7 +30,7 @@
             "id": "wwiseutility.wwiseauthoringutility.003.autoassignswitchcontainer",
             "displayName": "Auto assign to Switch/State",
             "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
-            "args": "switch ${id}",
+            "args": "switch_auto ${id}",
             "defaultShortcut": "Alt+W",
             "redirectOutputs": true,
             "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
