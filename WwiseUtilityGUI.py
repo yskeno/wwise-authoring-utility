@@ -26,6 +26,7 @@ class MainWindow(tkinter.Tk):
     def open_custom_switchassign_setting(self, switch_info: dict):
         self.switch_dict = switch_info
         self.wd_switch_setting = tkinter.Toplevel(self)
+        self.wd_switch_setting.iconbitmap(sys.executable)
         self.wd_switch_setting.title("Custom Switch Assign Setting")
         self.wd_switch_setting.geometry("500x300")
         self.wd_switch_setting.protocol(
@@ -49,12 +50,13 @@ class MainWindow(tkinter.Tk):
 
         self.cvs_scrollable = tkinter.Canvas(self.wd_switch_setting)
 
-        self.frm_children = ttk.Frame(self.cvs_scrollable, padding=5)
+        self.frm_keyword_assign = ttk.Frame(self.wd_switch_setting)
+        self.frm_scrollable = ttk.Frame(self.cvs_scrollable, padding=5)
         self.cvs_scrollable.create_window(
-            (0, 0), window=self.frm_children, anchor='nw', tags='frame')
-        self.frm_children.columnconfigure(0, weight=1)
-        self.frm_children.columnconfigure(1, weight=2)
-        self.frm_children.bind('<Configure>', lambda e: self.cvs_scrollable.configure(
+            (0, 0), window=self.frm_scrollable, anchor='nw', tags='frame')
+        self.frm_scrollable.columnconfigure(0, weight=1)
+        self.frm_scrollable.columnconfigure(1, weight=2)
+        self.frm_scrollable.bind('<Configure>', lambda e: self.cvs_scrollable.configure(
             width=e.width, scrollregion=self.cvs_scrollable.bbox('all')))
         self.cvs_scrollable.bind('<Configure>', self._on_canvas_configure)
 
@@ -104,9 +106,9 @@ class MainWindow(tkinter.Tk):
                 childname_length = len(max(switch_info.get('child', [])))
                 for child in switch_info.get('child', ''):
                     self.keyword_objects.setdefault(
-                        ttk.Label(self.frm_children,
+                        ttk.Label(self.frm_scrollable,
                                   name="lbl_" + child, width=childname_length, text=child, padding=2),
-                        ttk.Entry(self.frm_children,
+                        ttk.Entry(self.frm_scrollable,
                                   name='ent_' + child, width=childname_length))
 
                 for i, obj in enumerate(self.keyword_objects.items()):
