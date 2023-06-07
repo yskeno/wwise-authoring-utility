@@ -31,8 +31,8 @@ class MainWindow(tkinter.Tk):
         self.wd_switch_setting.protocol(
             "WM_DELETE_WINDOW", self.close_window)
 
-        self.frame_group_setting = ttk.Frame(self.wd_switch_setting, padding=5)
-        self.lbl_groupname = ttk.Label(self.frame_group_setting,
+        self.frm_group_setting = ttk.Frame(self.wd_switch_setting, padding=5)
+        self.lbl_groupname = ttk.Label(self.frm_group_setting,
                                        text='Select State/Switch Group to assign.')
         self.lbl_groupname.pack(anchor='nw')
 
@@ -40,30 +40,56 @@ class MainWindow(tkinter.Tk):
         cmb_values = [group_info.get('path', '')
                       for group_info in self.switch_dict.values()]
         groupname_length = len(max(cmb_values))+15
-        self.cmb_groupname = ttk.Combobox(self.frame_group_setting,
+        self.cmb_groupname = ttk.Combobox(self.frm_group_setting,
                                           width=groupname_length, state='readonly', values=cmb_values)
         # self.cmb_groupname.current(0)
         self.cmb_groupname.bind('<<ComboboxSelected>>',
                                 self._open_switch_keyword_setting)
-        self.cmb_groupname.pack(anchor='nw')
+        self.cmb_groupname.pack(anchor='nw', fill='x')
 
-        self.frame_children = ttk.Frame(self.wd_switch_setting, padding=5)
-        self.lbl_childlen = ttk.Label(self.frame_children,
+        self.cvs_scrollable = tkinter.Canvas(self.wd_switch_setting)
+
+        self.frm_children = ttk.Frame(self.cvs_scrollable, padding=5)
+        self.cvs_scrollable.create_window(
+            (0, 0), window=self.frm_children, anchor='nw', tags='frame')
+        self.frm_children.columnconfigure(0, weight=1)
+        self.frm_children.columnconfigure(1, weight=2)
+        self.frm_children.bind('<Configure>', lambda e: self.cvs_scrollable.configure(
+            width=e.width, scrollregion=self.cvs_scrollable.bbox('all')))
+        self.cvs_scrollable.bind('<Configure>', self._on_canvas_configure)
+
+        self.vsb = ttk.Scrollbar(
+            self.wd_switch_setting, command=self.cvs_scrollable.yview)
+        self.vsb.pack(side='right', fill='y')
+        self.cvs_scrollable.configure(yscrollcommand=self.vsb.set)
+
+        self.lbl_childlen = ttk.Label(self.wd_switch_setting,
                                       text='Enter keyword between State/Switch and audio object.')
-        self.lbl_childlen.grid(columnspan=2)
         self.keyword_objects = {}
 
-        self.frame_buttons = ttk.Frame(self.wd_switch_setting, padding=5)
-        self.btn_assign = ttk.Button(self.frame_buttons,
+        self.frm_buttons = ttk.Frame(self.wd_switch_setting, padding=5)
+        self.btn_assign = ttk.Button(self.frm_buttons,
                                      state='disable', text='Assign', command=self._assign_switch_keywords)
         self.btn_assign.pack(side='left', anchor='center')
-        self.btn_cancel = ttk.Button(self.frame_buttons,
+        self.btn_cancel = ttk.Button(self.frm_buttons,
                                      state='normal', text='Cancel', command=self.close_window)
         self.btn_cancel.pack(side='right', anchor='center')
 
-        self.frame_group_setting.pack(anchor='nw')
-        self.frame_children.pack(anchor='nw')
-        self.frame_buttons.pack(anchor='w')
+        self.frm_group_setting.pack(anchor='nw', fill='x')
+        self.lbl_childlen.pack(anchor='nw')
+        self.frm_buttons.pack(anchor='w', side='bottom')
+        self.cvs_scrollable.pack(anchor='nw', fill='both', expand=True)
+
+        self.bind_all('<MouseWheel>', self._on_mouse_wheel_move)
+
+    def _on_canvas_configure(self, event):
+        self.cvs_scrollable.itemconfigure(
+            'frame', width=self.cvs_scrollable.winfo_width())
+
+    def _on_mouse_wheel_move(self, event=None):
+        if event:
+            self.cvs_scrollable.yview_scroll(
+                int(-1*(event.delta/abs(event.delta))), 'units')
 
     def _open_switch_keyword_setting(self, event):
         self.btn_assign['state'] = 'normal'
@@ -78,15 +104,15 @@ class MainWindow(tkinter.Tk):
                 childname_length = len(max(switch_info.get('child', [])))
                 for child in switch_info.get('child', ''):
                     self.keyword_objects.setdefault(
-                        ttk.Label(self.frame_children,
+                        ttk.Label(self.frm_children,
                                   name="lbl_" + child, width=childname_length, text=child, padding=2),
-                        ttk.Entry(self.frame_children,
+                        ttk.Entry(self.frm_children,
                                   name='ent_' + child, width=childname_length))
 
                 for i, obj in enumerate(self.keyword_objects.items()):
                     obj[0].grid(column=0, row=i+1, sticky="EW")
                     obj[1].grid(column=1, row=i+1, sticky="EW")
-                return
+        return
 
     def _assign_switch_keywords(self):
         # for keyword_entry in self.keyword_objects.values():
