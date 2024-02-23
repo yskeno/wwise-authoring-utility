@@ -5,9 +5,8 @@
             "id": "wwiseutility.wwiseauthoringutility.001.connecttolocalhost",
             "displayName": "Connect/Disconnect to Localhost",
             "defaultShortcut": "Alt+H",
-            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
-            "args": "remote",
-            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "program": "${CurrentCommandDirectory}\\connect_to_localhost.py",
+            "startMode": "SingleSelectionSingleProcess",
             "redirectOutputs": true,
             "mainMenu": {
                 "basePath": "WwiseUtility"

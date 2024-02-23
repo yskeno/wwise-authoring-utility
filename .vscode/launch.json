@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Python: Main File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}\\Main.py",
             "args": [
@@ -18,7 +18,7 @@
         },
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
