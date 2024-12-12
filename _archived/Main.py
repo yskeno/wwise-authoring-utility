@@ -3,7 +3,7 @@
 import sys
 import threading
 
-from Python.WAU_Interface import WwiseUtilityClient, CannotConnectToWaapiException
+from WAU_Interface import WwiseUtilityClient, CannotConnectToWaapiException
 import WAU_GUI
 
 help_text = """
