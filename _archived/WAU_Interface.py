@@ -2,7 +2,7 @@ import os
 import re
 
 from waapi import WaapiClient, CannotConnectToWaapiException, WaapiRequestFailed
-from WwiseAuthoringUtilityUI import MainWindow
+from WAU_GUI import MainWindow
 
 
 class WwiseUtilityClient(WaapiClient):
@@ -19,8 +19,7 @@ class WwiseUtilityClient(WaapiClient):
                 window.result_success("Complete", f"Complete successfully.")
             except CannotConnectToWaapiException as e:
                 window.result_error(
-                    "CannotConnectToWaapiException",
-                    f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?",
+                    "CannotConnectToWaapiException", f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?"
                 )
             except WaapiRequestFailed as e:
                 window.result_error("WaapiRequestFailed", f"{e}")
@@ -47,15 +46,13 @@ class WwiseUtilityClient(WaapiClient):
 
     def _get_name_from_guid(self, guids: tuple):
         objects = self.call(
-            "ak.wwise.core.object.get",
-            {"from": {"id": list(guids)}, "options": {"return": ["name"]}},
+            "ak.wwise.core.object.get", {"from": {"id": list(guids)}, "options": {"return": ["name"]}}
         )["return"]
         return tuple(obj["name"] for obj in objects)
 
     def _get_path_from_guid(self, guids: tuple):
         objects = self.call(
-            "ak.wwise.core.object.get",
-            {"from": {"id": list(guids)}, "options": {"return": ["path"]}},
+            "ak.wwise.core.object.get", {"from": {"id": list(guids)}, "options": {"return": ["path"]}}
         )["return"]
         return tuple(obj["path"] for obj in objects)
 
@@ -94,8 +91,7 @@ class WwiseUtilityClient(WaapiClient):
             print(f"*** Connect to {target_console}")
             window.after_idle(lambda: window.set_current_process(85, f'Connect to {target_console["appName"]}...'))
             self.call(
-                "ak.wwise.core.remote.connect",
-                {"host": target_console["host"], "appName": target_console["appName"]},
+                "ak.wwise.core.remote.connect", {"host": target_console["host"], "appName": target_console["appName"]}
             )
             window.after_idle(lambda: window.set_current_process(100, "Connected."))
 
@@ -113,11 +109,7 @@ class WwiseUtilityClient(WaapiClient):
         for guid in guids:
             children: list = self.call(
                 "ak.wwise.core.object.get",
-                {
-                    "from": {"id": [guid]},
-                    "transform": [{"select": ["children"]}],
-                    "options": {"return": ["name"]},
-                },
+                {"from": {"id": [guid]}, "transform": [{"select": ["children"]}], "options": {"return": ["name"]}},
             )["return"]
             if children is None:
                 failed_ids.add(guid)
@@ -153,10 +145,7 @@ class WwiseUtilityClient(WaapiClient):
             isassigned = False
             stategroup: dict = self.call(
                 "ak.wwise.core.object.get",
-                {
-                    "from": {"id": [guid]},
-                    "options": {"return": ["@SwitchGroupOrStateGroup"]},
-                },
+                {"from": {"id": [guid]}, "options": {"return": ["@SwitchGroupOrStateGroup"]}},
             )["return"][0]["@SwitchGroupOrStateGroup"]
             if stategroup is None or stategroup["id"] == "{00000000-0000-0000-0000-000000000000}":
                 failed_ids.add(guid)
@@ -231,10 +220,7 @@ class WwiseUtilityClient(WaapiClient):
         # Get All State/SwitchGroup Info.
         group_list: list = self.call(
             "ak.wwise.core.object.get",
-            {
-                "from": {"ofType": ["StateGroup", "SwitchGroup"]},
-                "options": {"return": ["id", "path"]},
-            },
+            {"from": {"ofType": ["StateGroup", "SwitchGroup"]}, "options": {"return": ["id", "path"]}},
         )["return"]
 
         for group in group_list:
@@ -245,10 +231,7 @@ class WwiseUtilityClient(WaapiClient):
                 "ak.wwise.core.object.get",
                 {
                     "from": {"id": [group["id"]]},
-                    "transform": [
-                        {"select": ["children"]},
-                        {"where": ["type:isIn", ["State", "Switch"]]},
-                    ],
+                    "transform": [{"select": ["children"]}, {"where": ["type:isIn", ["State", "Switch"]]}],
                     "options": {"return": ["id", "name"]},
                 },
             )["return"]
@@ -273,10 +256,7 @@ class WwiseUtilityClient(WaapiClient):
             isassigned = False
             stategroup: dict = self.call(
                 "ak.wwise.core.object.get",
-                {
-                    "from": {"id": [guid]},
-                    "options": {"return": ["@SwitchGroupOrStateGroup"]},
-                },
+                {"from": {"id": [guid]}, "options": {"return": ["@SwitchGroupOrStateGroup"]}},
             )["return"][0]["@SwitchGroupOrStateGroup"]
             if (
                 stategroup is None
@@ -321,10 +301,7 @@ class WwiseUtilityClient(WaapiClient):
                                 else:
                                     self.call(
                                         "ak.wwise.core.switchContainer.addAssignment",
-                                        {
-                                            "child": child["id"],
-                                            "stateOrSwitch": state["id"],
-                                        },
+                                        {"child": child["id"], "stateOrSwitch": state["id"]},
                                     )
                                     isassigned = True
                                     continue

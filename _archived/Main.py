@@ -3,10 +3,10 @@
 import sys
 import threading
 
-from WwiseUtilityInterface import WwiseUtilityClient, CannotConnectToWaapiException
-import WwiseUtilityGUI
+from Python.WAU_Interface import WwiseUtilityClient, CannotConnectToWaapiException
+import WAU_GUI
 
-help_text = """\
+help_text = """
 usage: Wwise Authoring Utility help you to control Wwise.
 
 arguments:
@@ -34,7 +34,7 @@ arguments:
                          | Metal_Footsteps_01 |    Metal   |
 
 options:
-    help    show this help message and exit.\
+    help    show this help message and exit.
 """
 
 
@@ -43,39 +43,56 @@ class InterruptedWAU(Exception):
 
 
 def main():
-    window = WwiseUtilityGUI.MainWindow()
-    if len(sys.argv) <= 1 or sys.argv[1] == 'help':
+    window = WAU_GUI.MainWindow()
+    if len(sys.argv) <= 1 or sys.argv[1] == "help":
         print(help_text)
-        window.show_simple_info(
-            'Wwise Authoring Utility', help_text)
+        window.show_simple_info("Wwise Authoring Utility", help_text)
         window.quit()
         return
 
-    if sys.argv[1] == 'print':
+    if sys.argv[1] == "print":
         print(sys.argv)
         return
 
     try:
         with WwiseUtilityClient() as client:
             waapi_thread: threading.Thread = None
-            if sys.argv[1] == 'remote':
+            if sys.argv[1] == "remote":
                 waapi_thread = threading.Thread(
-                    target=client.connect_to_localhost, kwargs={'window': window, })
-            elif sys.argv[1] == 'rename':
+                    target=client.connect_to_localhost,
+                    kwargs={
+                        "window": window,
+                    },
+                )
+            elif sys.argv[1] == "rename":
                 waapi_thread = threading.Thread(
-                    target=client.auto_rename_container, kwargs={'window': window, })
-            elif sys.argv[1] == 'switch_auto':
+                    target=client.auto_rename_container,
+                    kwargs={
+                        "window": window,
+                    },
+                )
+            elif sys.argv[1] == "switch_auto":
                 waapi_thread = threading.Thread(
-                    target=client.auto_assign_switch_container, kwargs={'window': window, })
-            elif sys.argv[1] == 'switch_custom':
+                    target=client.auto_assign_switch_container,
+                    kwargs={
+                        "window": window,
+                    },
+                )
+            elif sys.argv[1] == "switch_custom":
                 switch_info: dict = client.get_stateandswitch_info()
                 window.open_custom_switchassign_setting(switch_info)
                 window.mainloop()
 
                 if not window.assigned_keywords:
-                    raise InterruptedWAU('Not Assigned Switch/State Keywords.')
+                    raise InterruptedWAU("Not Assigned Switch/State Keywords.")
                 waapi_thread = threading.Thread(
-                    target=client.custom_assign_switch_container, kwargs={'window': window, 'stategrouptoassign': window.stategroup_name, 'assigned_keywords': window.assigned_keywords})
+                    target=client.custom_assign_switch_container,
+                    kwargs={
+                        "window": window,
+                        "stategrouptoassign": window.stategroup_name,
+                        "assigned_keywords": window.assigned_keywords,
+                    },
+                )
             else:
                 raise Exception("Not valid sys.argv[1]")
 
@@ -83,11 +100,12 @@ def main():
             window.mainloop()
 
     except InterruptedWAU as e:
-        print(f'InterruptedWAU: {str(e)}')
+        print(f"InterruptedWAU: {str(e)}")
 
     except CannotConnectToWaapiException as e:
-        window.result_error("CannotConnectToWaapiException",
-                            f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?")
+        window.result_error(
+            "CannotConnectToWaapiException", f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?"
+        )
 
     except Exception as e:
         window.result_error("ERROR", str(e))

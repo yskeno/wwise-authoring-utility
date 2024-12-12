@@ -2,11 +2,11 @@
     "version": 2,
     "commands": [
         {
-            "id": "wwiseutility.wwiseauthoringutility.001.connecttolocalhost",
+            "id": "wwiseauthoringutility.001.connecttolocalhost",
             "displayName": "Connect/Disconnect to Localhost",
             "defaultShortcut": "Alt+H",
-            "program": "${CurrentCommandDirectory}\\connect_to_localhost.py",
-            "startMode": "SingleSelectionSingleProcess",
+            "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_ConnectToLocalHost.pyw",
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
             "redirectOutputs": true,
             "mainMenu": {
                 "basePath": "WwiseUtility"
@@ -15,7 +15,7 @@
         {
             "id": "wwiseutility.wwiseauthoringutility.002.autorenamecontainers",
             "displayName": "Auto rename containers",
-            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
+            "program": "${CurrentCommandDirectory}\\Python\\Main.py",
             "args": "rename ${id}",
             "defaultShortcut": "Alt+R",
             "redirectOutputs": true,
@@ -28,7 +28,7 @@
         {
             "id": "wwiseutility.wwiseauthoringutility.003.autoassignswitchcontainer",
             "displayName": "Auto assign to Switch/State",
-            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
+            "program": "${CurrentCommandDirectory}\\Python\\Main.py",
             "args": "switch_auto ${id}",
             "defaultShortcut": "Alt+W",
             "redirectOutputs": true,
@@ -41,7 +41,7 @@
         {
             "id": "wwiseutility.wwiseauthoringutility.004.customassignswitchcontainer",
             "displayName": "Custom assign to Switch/State",
-            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
+            "program": "${CurrentCommandDirectory}\\Python\\Main.py",
             "args": "switch_custom ${id}",
             "defaultShortcut": "Ctrl+Alt+W",
             "redirectOutputs": true,
@@ -54,7 +54,7 @@
         {
             "id": "wwiseutility.z.help",
             "displayName": "Help",
-            "program": "${CurrentCommandDirectory}\\WwiseAuthoringUtility\\WwiseAuthoringUtility.exe",
+            "program": "${CurrentCommandDirectory}\\Python\\Main.py",
             "args": "help",
             "redirectOutputs": false,
             "mainMenu": {
