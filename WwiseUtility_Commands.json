@@ -6,23 +6,23 @@
             "displayName": "Connect/Disconnect to Localhost",
             "defaultShortcut": "Alt+H",
             "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_ConnectToLocalHost.pyw",
-            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "startMode": "SingleSelectionSingleProcess",
             "redirectOutputs": true,
             "mainMenu": {
                 "basePath": "WwiseUtility"
             }
         },
         {
-            "id": "wwiseutility.wwiseauthoringutility.002.autorenamecontainers",
-            "displayName": "Auto rename containers",
-            "program": "${CurrentCommandDirectory}\\Python\\Main.py",
-            "args": "rename ${id}",
+            "id": "wwiseutility.wwiseauthoringutility.002.createrandomcontainerfromselectedobject",
+            "displayName": "Create RandomContainer with selected objects",
+            "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_MakeContainerFromSelectedObject.pyw",
+            "args": "random",
             "defaultShortcut": "Alt+R",
             "redirectOutputs": true,
             "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
             "contextMenu": {
                 "basePath": "WwiseUtility",
-                "visibleFor": "BlendContainer,MusicPlaylistContainer,MusicSwitchContainer,RandomSequenceContainer,SwitchContainer"
+                "visibleFor": "Sound,BlendContainer,RandomSequenceContainer,SwitchContainer"
             }
         },
         {
@@ -35,7 +35,7 @@
             "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
             "contextMenu": {
                 "basePath": "WwiseUtility",
-                "visibleFor": "SwitchContainer"
+                "visibleFor": "BlendContainer,MusicPlaylistContainer,MusicSwitchContainer,RandomSequenceContainer,SwitchContainer"
             }
         },
         {
@@ -49,6 +49,18 @@
             "contextMenu": {
                 "basePath": "WwiseUtility",
                 "visibleFor": "SwitchContainer"
+            }
+        },
+        {
+            "id": "wwiseutility.z.Print",
+            "displayName": "Print",
+            "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_Test.py",
+            "args": "${id} ${name} ${type} ${path} ${parent}",
+            "redirectOutputs": true,
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "contextMenu": {
+                "basePath": "WwiseUtility",
+                "visibleFor": "Sound,BlendContainer,MusicPlaylistContainer,MusicSwitchContainer,RandomSequenceContainer,SwitchContainer"
             }
         },
         {
