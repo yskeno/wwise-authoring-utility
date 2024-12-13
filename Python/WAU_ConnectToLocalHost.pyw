@@ -1,31 +1,13 @@
-import tkinter.ttk
 from waapi import WaapiClient, CannotConnectToWaapiException
-import concurrent.futures, tkinter, time
+import concurrent.futures, time
+import WAU_GUI
 
 
 class NoAvailableLocalhostException(Exception):
     pass
 
 
-class MainWindow(tkinter.Tk):
-    def __init__(self):
-        super().__init__()
-
-        self.title("Wwise Authoring Utility")
-        self.geometry("300x75")
-        self.iconbitmap()
-        self.attributes("-topmost", 1)
-        self.protocol("WM_DELETE_WINDOW", self.quit)
-
-    def show_progress_bar(self):
-        self.proc_label = tkinter.Label(text="Wwise Utility Process")
-        self.proc_label.pack(side="top")
-
-        self.prog_bar = tkinter.ttk.Progressbar(self, length=200, mode="determinate")
-        self.prog_bar.pack(side="top")
-
-
-def connect_to_localhost(client: WaapiClient, root: MainWindow) -> bool:
+def connect_to_localhost(client: WaapiClient, root: WAU_GUI.MainWindow) -> bool:
     if client.call("ak.wwise.core.remote.getConnectionStatus")["isConnected"]:
         root.title("Wwise Utility: Disconnect from Localhost")
         root.proc_label["text"] = "Disconnect..."
@@ -47,41 +29,44 @@ def connect_to_localhost(client: WaapiClient, root: MainWindow) -> bool:
 
         availables = client.call("ak.wwise.core.remote.getAvailableConsoles")["consoles"]
 
-        root.proc_label["text"] = "Search target localhost application..."
-        root.prog_bar.step(40)
+        root.prog_bar.step(20)
 
-        target = []
+        localApps = []
         for console in availables:
             if console["host"] != "127.0.0.1":
                 continue
-            target.append(console)
+            localApps.append(console)
 
-        if len(target) == 0:
+        if len(localApps) == 0:
+            root.proc_label["text"] = "No available consoles."
+            root.quit()
             raise NoAvailableLocalhostException
 
-        if len(target) != 1:
-            result = []
-            for console in target:
+        root.prog_bar.step(20)
+        if len(localApps) != 1:
+            targets = []
+            for console in localApps:
                 if "editor" in console["appName"].lower():
-                    result.append(console)
-            if len(result) > 0:
-                target = result
+                    targets.append(console)
+            if len(targets) > 0:
+                localApps = targets
 
-        root.proc_label["text"] = f"Connect to \"{target[0]['appName']}\"..."
+        root.proc_label["text"] = f"Connect to \"{targets[0]['appName']}\"..."
         root.prog_bar.step(20)
 
         client.call(
-            "ak.wwise.core.remote.connect", {"host": target[0]["host"], "commandPort": target[0]["commandPort"]}
+            "ak.wwise.core.remote.connect", {"host": targets[0]["host"], "commandPort": targets[0]["commandPort"]}
         )
         client.disconnect()
 
         root.proc_label["text"] = "Connected!"
         root.prog_bar.step(19.9)
         root.quit()
+        return
 
 
 def main():
-    root = MainWindow()
+    root = WAU_GUI.MainWindow()
     root.show_progress_bar()
 
     try:
@@ -94,17 +79,15 @@ def main():
                 raise result
 
     except NoAvailableLocalhostException as e:
-        print("NoAvailableLocalhostException", f"{str(e)}\nNo available consoles on localhost.")
+        root.show_warning("NoAvailableLocalhostException", f"{str(e)}\nNo available consoles on localhost.")
 
     except CannotConnectToWaapiException as e:
-        # window.result_error(
-        #     "CannotConnectToWaapiException", f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?"
-        # )
-        print("CannotConnectToWaapiException", f"{str(e)}\nIs Wwise running and Wwise Authoring API enabled?")
+        root.show_error(
+            "Cannot Connect To Waapi Exception", f"{str(e)}\n\nIs Wwise running and Wwise Authoring API enabled?"
+        )
 
     except Exception as e:
-        # window.result_error("ERROR", str(e))
-        print("ERRORRRR", str(e))
+        root.show_error("Exception", str(e))
 
 
 if __name__ == "__main__":
