@@ -31,25 +31,26 @@ def connect_to_localhost(client: WaapiClient, root: WAU_GUI.MainWindow) -> bool:
 
         root.prog_bar.step(20)
 
-        localApps = []
+        localhosts = []
         for console in availables:
             if console["host"] != "127.0.0.1":
                 continue
-            localApps.append(console)
+            localhosts.append(console)
 
-        if len(localApps) == 0:
+        root.prog_bar.step(20)
+        targets = []
+        if len(localhosts) == 0:
             root.proc_label["text"] = "No available consoles."
             root.quit()
             raise NoAvailableLocalhostException
-
-        root.prog_bar.step(20)
-        if len(localApps) != 1:
-            targets = []
-            for console in localApps:
+        elif len(localhosts) == 1:
+            targets = localhosts
+        elif len(localhosts) > 1:
+            for console in localhosts:
                 if "editor" in console["appName"].lower():
                     targets.append(console)
-            if len(targets) > 0:
-                localApps = targets
+            if len(targets) == 0:
+                targets.append(localhosts[0])
 
         root.proc_label["text"] = f"Connect to \"{targets[0]['appName']}\"..."
         root.prog_bar.step(20)
@@ -60,7 +61,7 @@ def connect_to_localhost(client: WaapiClient, root: WAU_GUI.MainWindow) -> bool:
         client.disconnect()
 
         root.proc_label["text"] = "Connected!"
-        root.prog_bar.step(19.9)
+        root.prog_bar.step(19.99)
         root.quit()
         return
 
