@@ -4,10 +4,10 @@
         {
             "id": "wwiseauthoringutility.001.connecttolocalhost",
             "displayName": "Connect/Disconnect to Localhost",
-            "defaultShortcut": "Alt+H",
             "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_ConnectToLocalHost.pyw",
-            "startMode": "SingleSelectionSingleProcess",
+            "defaultShortcut": "Alt+H",
             "redirectOutputs": true,
+            "startMode": "SingleSelectionSingleProcess",
             "mainMenu": {
                 "basePath": "WwiseUtility"
             }
@@ -26,10 +26,10 @@
             }
         },
         {
-            "id": "wwiseutility.wwiseauthoringutility.003.autoassignswitchcontainer",
+            "id": "wwiseutility.wwiseauthoringutility.003.autoassignswitchobject",
             "displayName": "Auto assign to Switch/State",
-            "program": "${CurrentCommandDirectory}\\Python\\Main.py",
-            "args": "switch_auto ${id}",
+            "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_AssignSwitchObject.pyw",
+            "args": "",
             "defaultShortcut": "Alt+W",
             "redirectOutputs": true,
             "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
