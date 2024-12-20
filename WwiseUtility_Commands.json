@@ -13,7 +13,7 @@
             }
         },
         {
-            "id": "wwiseutility.wwiseauthoringutility.002.createrandomcontainerfromselectedobject",
+            "id": "wwiseauthoringutility.002a.createrandomcontainerfromselectedobject",
             "displayName": "Create RandomContainer with selected objects",
             "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_MakeContainerFromSelectedObject.pyw",
             "args": "random",
@@ -26,24 +26,49 @@
             }
         },
         {
-            "id": "wwiseutility.wwiseauthoringutility.003.autoassignswitchobject",
-            "displayName": "Auto assign to Switch/State",
-            "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_AssignSwitchObject.pyw",
-            "args": "",
+            "id": "wwiseauthoringutility.002b.createsequencecontainerfromselectedobject",
+            "displayName": "Create SequenceContainer with selected objects",
+            "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_MakeContainerFromSelectedObject.pyw",
+            "args": "sequence",
+            "defaultShortcut": "Alt+Q",
+            "redirectOutputs": true,
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "contextMenu": {
+                "basePath": "WwiseUtility",
+                "visibleFor": "Sound,BlendContainer,RandomSequenceContainer,SwitchContainer"
+            }
+        },
+        {
+            "id": "wwiseauthoringutility.002c.createblendcontainerfromselectedobject",
+            "displayName": "Create BlendContainer with selected objects",
+            "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_MakeContainerFromSelectedObject.pyw",
+            "args": "blend",
+            "defaultShortcut": "Alt+E",
+            "redirectOutputs": true,
+            "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
+            "contextMenu": {
+                "basePath": "WwiseUtility",
+                "visibleFor": "Sound,BlendContainer,RandomSequenceContainer,SwitchContainer"
+            }
+        },
+        {
+            "id": "wwiseauthoringutility.002d.createswitchcontainerfromselectedobject",
+            "displayName": "Create SwitchContainer with selected objects",
+            "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_MakeContainerFromSelectedObject.pyw",
+            "args": "switch",
             "defaultShortcut": "Alt+W",
             "redirectOutputs": true,
             "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
             "contextMenu": {
                 "basePath": "WwiseUtility",
-                "visibleFor": "BlendContainer,MusicPlaylistContainer,MusicSwitchContainer,RandomSequenceContainer,SwitchContainer"
+                "visibleFor": "Sound,BlendContainer,RandomSequenceContainer,SwitchContainer"
             }
         },
         {
-            "id": "wwiseutility.wwiseauthoringutility.004.customassignswitchcontainer",
-            "displayName": "Custom assign to Switch/State",
-            "program": "${CurrentCommandDirectory}\\Python\\Main.py",
-            "args": "switch_custom ${id}",
-            "defaultShortcut": "Ctrl+Alt+W",
+            "id": "wwiseauthoringutility.003.autoassignswitchobject",
+            "displayName": "Auto assign to Switch, State",
+            "program": "py ${CurrentCommandDirectory}\\wwise-authoring-utility\\Python\\WAU_AssignSwitchObject.pyw",
+            "defaultShortcut": "Ctrl+Shift+W",
             "redirectOutputs": true,
             "startMode": "MultipleSelectionSingleProcessSpaceSeparated",
             "contextMenu": {

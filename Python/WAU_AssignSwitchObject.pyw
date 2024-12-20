@@ -1,7 +1,6 @@
 from waapi import WaapiClient, CannotConnectToWaapiException
-import concurrent.futures, re, sys, functools
+import concurrent.futures, functools
 import WAU_GUI
-import pprint
 
 
 def common_substring(str_list: list[str]):
@@ -23,8 +22,8 @@ def assign_switch_object(client: WaapiClient, root: WAU_GUI.MainWindow):
         {"options": {"return": ["id", "name", "type", "childrenCount", "@SwitchGroupOrStateGroup"]}},
     )["objects"]
 
-    selected_switch_containers = []
-    assigned_switch_groups = []
+    selected_sw_containers = []
+    assigned_sw_groups = []
 
     # target for SwitchContainer with child and assigned SwitchGroup
     for obj in selected_objects:
@@ -33,85 +32,92 @@ def assign_switch_object(client: WaapiClient, root: WAU_GUI.MainWindow):
             and obj["childrenCount"] != 0
             and obj["@SwitchGroupOrStateGroup"]["id"] != "{00000000-0000-0000-0000-000000000000}"
         ):
-            selected_switch_containers.append(obj)
-            assigned_switch_groups.append(
+            selected_sw_containers.append(obj)
+            assigned_sw_groups.append(
                 {"id": obj["@SwitchGroupOrStateGroup"]["id"], "name": obj["@SwitchGroupOrStateGroup"]["name"]}
             )
     # Remove duplicate
-    assigned_switch_groups = list({switch["id"]: switch for switch in assigned_switch_groups}.values())
+    assigned_sw_groups = list({switch["id"]: switch for switch in assigned_sw_groups}.values())
 
     # make switch container dict
-    switch_container_children = client.call(
+    selected_sw_container_children = client.call(
         "ak.wwise.core.object.get",
         {
-            "from": {"id": [i.get("id") for i in selected_switch_containers]},
+            "from": {"id": [i.get("id") for i in selected_sw_containers]},
             "transform": [{"select": ["children"]}],
             "options": {"return": ["id", "name", "parent"]},
         },
     )["return"]
 
-    for swct_chld in switch_container_children:
-        for sel_swct in selected_switch_containers:
-            if swct_chld["parent"]["id"] == sel_swct["id"]:
-                sel_swct.setdefault("children", [])
-                sel_swct["children"].append({"id": swct_chld["id"], "name": swct_chld["name"]})
+    for selected_sw_container_child in selected_sw_container_children:
+        for selected_sw_container in selected_sw_containers:
+            if selected_sw_container_child["parent"]["id"] == selected_sw_container["id"]:
+                selected_sw_container.setdefault("children", [])
+                selected_sw_container["children"].append(
+                    {"id": selected_sw_container_child["id"], "name": selected_sw_container_child["name"]}
+                )
                 break
             else:
                 continue
-    for sel_swct in selected_switch_containers:
-        sel_swct["prefix"] = common_substring([n.get("name") for n in sel_swct.get("children")])
-
-    print("=== selected_switch_containers ===")
-    pprint.pprint(selected_switch_containers)
+    for selected_sw_container in selected_sw_containers:
+        selected_sw_container["prefix"] = common_substring(
+            [n.get("name") for n in selected_sw_container.get("children")]
+        )
 
     # make switch group dict
-    assigned_switch_children = client.call(
+    assigned_sw_children = client.call(
         "ak.wwise.core.object.get",
         {
-            "from": {"id": [i.get("id") for i in assigned_switch_groups]},
+            "from": {"id": [i.get("id") for i in assigned_sw_groups]},
             "transform": [{"select": ["children"]}],
             "options": {"return": ["id", "name", "parent"]},
         },
     )["return"]
 
-    for switch_chld in assigned_switch_children:
-        for asgn_swg in assigned_switch_groups:
-            if switch_chld["parent"]["id"] == asgn_swg["id"]:
-                asgn_swg.setdefault("children", [])
-                asgn_swg["children"].append({"id": switch_chld["id"], "name": switch_chld["name"]})
+    for assigned_sw_child in assigned_sw_children:
+        for assigned_sw_group in assigned_sw_groups:
+            if assigned_sw_child["parent"]["id"] == assigned_sw_group["id"]:
+                assigned_sw_group.setdefault("children", [])
+                assigned_sw_group["children"].append(
+                    {"id": assigned_sw_child["id"], "name": assigned_sw_child["name"]}
+                )
                 break
             else:
                 continue
-    for asgn_swg in assigned_switch_groups:
-        asgn_swg["prefix"] = common_substring([n.get("name") for n in asgn_swg.get("children")])
+    for assigned_sw_group in assigned_sw_groups:
+        assigned_sw_group["prefix"] = common_substring([n.get("name") for n in assigned_sw_group.get("children")])
 
     # assign sounds to each switch
     import re
 
     suffix = re.compile(r"[\s\d_\-,\(\)\[\]\{\}!\+=;]*$")
 
-    for sel_swct in selected_switch_containers:
-        swgp_in_swct = {}
-        for asgn_swg in assigned_switch_groups:
-            if sel_swct["@SwitchGroupOrStateGroup"]["id"] == asgn_swg["id"]:
-                swgp_in_swct = asgn_swg
+    for selected_sw_container in selected_sw_containers:
+        sw_group_in_selected = {}
+        for assigned_sw_group in assigned_sw_groups:
+            if selected_sw_container["@SwitchGroupOrStateGroup"]["id"] == assigned_sw_group["id"]:
+                sw_group_in_selected = assigned_sw_group
                 break
             else:
                 continue
-        ssc_assigned = client.call("ak.wwise.core.switchContainer.getAssignments", {"id": sel_swct["id"]})["return"]
-        ssc_assigned = [id.get("child") for id in ssc_assigned]
-        for swct_chld in sel_swct["children"]:
+        assigned_container_children = client.call(
+            "ak.wwise.core.switchContainer.getAssignments", {"id": selected_sw_container["id"]}
+        )["return"]
+        assigned_container_children = [id.get("child") for id in assigned_container_children]
+        for selected_sw_container_child in selected_sw_container["children"]:
             # skip sound if it's already assigned
-            if swct_chld["id"] in ssc_assigned:
+            if selected_sw_container_child["id"] in assigned_container_children:
                 continue
-            for switch in swgp_in_swct["children"]:
+            for switch in sw_group_in_selected["children"]:
                 if (
-                    re.sub(suffix, "", swct_chld["name"]).removeprefix(sel_swct["prefix"]).lower()
-                    in switch["name"].removeprefix(swgp_in_swct["prefix"]).lower()
+                    re.sub(suffix, "", selected_sw_container_child["name"])
+                    .removeprefix(selected_sw_container["prefix"])
+                    .lower()
+                    in switch["name"].removeprefix(sw_group_in_selected["prefix"]).lower()
                 ):
                     client.call(
                         "ak.wwise.core.switchContainer.addAssignment",
-                        {"child": swct_chld["id"], "stateOrSwitch": switch["id"]},
+                        {"child": selected_sw_container_child["id"], "stateOrSwitch": switch["id"]},
                     )
                     break
                 else:
@@ -121,26 +127,24 @@ def assign_switch_object(client: WaapiClient, root: WAU_GUI.MainWindow):
 def main():
     root = WAU_GUI.MainWindow()
 
-    with WaapiClient() as client, concurrent.futures.ThreadPoolExecutor() as executor:
-        client.call("ak.wwise.core.undo.beginGroup")
-        try:
-            thread = executor.submit(assign_switch_object, client, root)
-
-            # root.mainloop()
-            result = thread.result()
-            if result is not None:
-                raise result
-
-        except CannotConnectToWaapiException as e:
-            root.show_error(
-                "Cannot Connect To Waapi Exception", f"{str(e)}\n\nIs Wwise running and Wwise Authoring API enabled?"
-            )
-
-        except Exception as e:
-            print("ERROR", str(e))
-
-        finally:
-            client.call("ak.wwise.core.undo.endGroup", {"displayName": "Auto assign objects to switches"})
+    try:
+        with WaapiClient() as client, concurrent.futures.ThreadPoolExecutor() as executor:
+            client.call("ak.wwise.core.undo.beginGroup")
+            try:
+                thread = executor.submit(assign_switch_object, client, root)
+                result = thread.result()
+                if result is not None:
+                    raise result
+            except Exception as e:
+                root.show_error("Exception", str(e))
+            else:
+                client.call("ak.wwise.core.undo.endGroup", {"displayName": "Auto assign objects to switches"})
+    except CannotConnectToWaapiException as e:
+        root.show_error(
+            "Cannot Connect To Waapi Exception", f"{str(e)}\n\nIs Wwise running and Wwise Authoring API enabled?"
+        )
+    except Exception as e:
+        root.show_error("Exception", str(e))
 
 
 if __name__ == "__main__":
