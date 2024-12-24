@@ -1,6 +1,22 @@
 from waapi import WaapiClient, CannotConnectToWaapiException
-import concurrent.futures, re, sys
+import concurrent.futures, re, sys, functools
 import WAU_GUI
+
+
+class NoChildWithCommonPrefix(Exception):
+    pass
+
+
+def common_substring(str_list: list[str]):
+    def common(a: str, b: str):
+        idx = 0
+        for i, j, _ in zip(a, b, range(len(a))):
+            if i != j:
+                break
+            idx = _ + 1
+        return a[:idx]
+
+    return "".join(functools.reduce(common, str_list))
 
 
 def make_container_from_selected_obj(client: WaapiClient, root: WAU_GUI.MainWindow):
@@ -8,14 +24,25 @@ def make_container_from_selected_obj(client: WaapiClient, root: WAU_GUI.MainWind
         "ak.wwise.ui.getSelectedObjects", {"options": {"return": ["id", "name", "type", "parent"]}}
     )["objects"]
 
-    suffix = re.compile(r"[\s\d_\-,\(\)\[\]\{\}!\+=;]*$")
-    target_containers = []
-
+    # extract common prefix for the objects without numbering suffix
+    targets_to_create = []
     for obj in selected_objects:
-        target_containers.append({"name": re.sub(suffix, "", obj["name"]), "parent_id": obj["parent"]["id"]})
-    tmp_seen = []
-    target_containers = [x for x in target_containers if x not in tmp_seen and not tmp_seen.append(x)]
+        if obj["parent"]["id"] in [i["parent"]["id"] for i in targets_to_create]:
+            target = [p for p in targets_to_create if p["parent"]["id"] == obj["parent"]["id"]][0]
+            target["children"].append({"name": obj["name"], "id": obj["id"]})
+            target["numberedChild"] = False
+            target["container"] = []
+        else:
+            targets_to_create.append(
+                {
+                    "parent": {"id": obj["parent"]["id"], "name": obj["parent"]["name"]},
+                    "children": [{"name": obj["name"], "id": obj["id"]}],
+                    "numberedChild": False,
+                    "container": [],
+                }
+            )
 
+    # switch container type from argument
     type = ""
     randomorsequence = 0
     if len(sys.argv) > 1:
@@ -31,45 +58,68 @@ def make_container_from_selected_obj(client: WaapiClient, root: WAU_GUI.MainWind
     else:
         type = "RandomSequenceContainer"
 
+    # make common string with removing number for the objects with numbered suffix,
+    # make common string from the longest common string for the objects without numbered suffix
     number_of_created_container = 0
-    for container in target_containers:
-        container_children = []
-        for obj in selected_objects:
-            if container["name"] in obj["name"] and container["parent_id"] == obj["parent"]["id"]:
-                container_children.append(obj)
+    suffix = re.compile(r"[\d\s_\-,\(\)\[\]\{\}!\+=;]*$")
+    for target in targets_to_create:
+        for child in target["children"]:
+            if (prefix := re.sub(suffix, "", child["name"])) != child["name"]:
+                target["numberedChild"] = True
 
-        if len(container_children) <= 1:
-            continue
+            if prefix in [n.get("name") for n in target["container"]]:
+                container = [c for c in target["container"] if c["name"] == prefix][0]
+                container["member"].append(child)
+                continue
+            else:
+                target["container"].append({"name": prefix, "member": [child]})
+                continue
 
-        if type == "RandomSequenceContainer":
-            created_container = client.call(
-                "ak.wwise.core.object.create",
+        if target["numberedChild"] == False:
+            target["container"] = [
                 {
-                    "parent": container["parent_id"],
-                    "onNameConflict": "rename",
-                    "type": type,
-                    "name": container["name"],
-                    "@RandomOrSequence": randomorsequence,
-                },
-            )
-            number_of_created_container += 1
-        else:
-            created_container = client.call(
-                "ak.wwise.core.object.create",
-                {
-                    "parent": container["parent_id"],
-                    "onNameConflict": "rename",
-                    "type": type,
-                    "name": container["name"],
-                },
-            )
-            number_of_created_container += 1
+                    "name": re.sub(suffix, "", common_substring([n["name"] for n in target["container"]])),
+                    "member": [m for c in target["container"] for m in c["member"]],
+                }
+            ]
 
-        for container_child in container_children:
-            client.call(
-                "ak.wwise.core.object.move",
-                {"object": container_child["id"], "parent": created_container["id"], "onNameConflict": "fail"},
-            )
+        for container in target["container"]:
+            # if container with no member, not create container
+            if len(container["member"]) <= 1:
+                continue
+
+            if type == "RandomSequenceContainer":
+                created_container = client.call(
+                    "ak.wwise.core.object.create",
+                    {
+                        "parent": target["parent"]["id"],
+                        "onNameConflict": "rename",
+                        "type": type,
+                        "name": container["name"],
+                        "@RandomOrSequence": randomorsequence,
+                    },
+                )
+                number_of_created_container += 1
+            else:
+                created_container = client.call(
+                    "ak.wwise.core.object.create",
+                    {
+                        "parent": target["parent"]["id"],
+                        "onNameConflict": "rename",
+                        "type": type,
+                        "name": container["name"],
+                    },
+                )
+                number_of_created_container += 1
+
+            for member in container["member"]:
+                client.call(
+                    "ak.wwise.core.object.move",
+                    {"object": member["id"], "parent": created_container["id"], "onNameConflict": "fail"},
+                )
+
+    if number_of_created_container == 0:
+        raise NoChildWithCommonPrefix
 
 
 def main():
@@ -83,8 +133,14 @@ def main():
                 result = thread.result()
                 if result is not None:
                     raise result
+            except NoChildWithCommonPrefix:
+                root.show_error(
+                    "Operation incompleted",
+                    "Not found common name in selected objects.\nSelect objects with general suffix. (SAMPLE_01, SAMPLE_02 ...)",
+                )
             except Exception as e:
                 root.show_error("Exception", str(e))
+
             else:
                 client.call("ak.wwise.core.undo.endGroup", {"displayName": "Create Container from selected objects"})
                 client.disconnect()
