@@ -5,6 +5,7 @@
 * Wwise 2019.2.15+
 
 ## SetUp
+### Using EXE
 1. Download WwiseAuthoringUtility_v*.*.zip from release page.
 1. Extract downloaded zip file.
 1. Move extracted files to following directory.
@@ -17,6 +18,9 @@
 	* Project folder:
 		* "Add-ons\\Commands"
 1. Relaunch Wwise or reload command add-ons.
+
+### Using Python Script
+1. 
 
 ## Usage
 * Connect/Disconnect to Localhost
