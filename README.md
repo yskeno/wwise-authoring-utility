@@ -20,7 +20,7 @@
 ****English version below.***
 ## セットアップ
 1. Python3.10 ～ 3.13のいずれかをインストールする。
-1. コマンドプロンプトで以下のコマンドを実行し、PythonでWAAPIを使うための初期セットアップを完了する。[^1]\
+1. コマンドプロンプトで以下のコマンドを実行し、PythonでWAAPIを使うための初期セットアップを完了する。\
 参考: [Python (Waapi-Client) - Remote Procedure Call(プロジェクトの初期化)](https://www.audiokinetic.com/ja/public-library/2024.1.9_8920/?source=SDK&id=waapi_client_python_rpc.html#waapi_client_python_rpc_init)
 	* Windows
 		* py -3 -m pip install waapi-client
@@ -49,5 +49,3 @@
 	* Project folder:
 		* "Add-ons\\Commands"
 1. Relaunch Wwise or reload command add-ons.
-
-[^1]: [Python (Waapi-Client) - Remote Procedure Call(プロジェクトの初期化)](https://www.audiokinetic.com/ja/public-library/2024.1.9_8920/?source=SDK&id=waapi_client_python_rpc.html#waapi_client_python_rpc_init)
