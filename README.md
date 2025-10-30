@@ -35,7 +35,7 @@
 1. Wwiseを起動して、任意のプロジェクトを開く。
 1. 上部のメインメニューもしくは各オブジェクトを右クリックしたメニュー内にあるWwiseUtilityから使いたい機能を選べばOK :+1:
 
-## SetUp
+## Setup
 ### Using EXE
 1. Download WwiseAuthoringUtility_v*.*.zip from release page.
 1. Extract downloaded zip file.
