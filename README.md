@@ -25,15 +25,18 @@
 	* Windows
 		* py -3 -m pip install waapi-client
 1. このリポジトリ全体をダウンロードもしくはクローンする。
-1. リポジトリのうち、"Pythonフォルダ"と"WwiseUtility_Commands.json"を、以下のいずれかのWwiseコマンドアドオン階層にコピーする。\
+1. リポジトリ全体を、以下のいずれかのWwiseコマンドアドオン階層にコピーする。\
    もしフォルダが存在しない場合は、新規で作成してからコピーする。
 	* ユーザデータディレクトリ内の階層(インストール済みのWwiseすべてで使用する場合の階層):
 		* Windows: %APPDATA%\Audiokinetic\Wwise\Add-ons\Commands
 	* Installationフォルダ内の階層(特定のWwiseバージョンに限定して使用する場合の階層):
 		* Windows: %WWISEROOT%\Authoring\Data\Add-ons\Commands
+
 	* プロジェクトフォルダ内の、"Add-ons\Commands"以下(特定のwprojに限定して使用する場合の階層)
+	<img width="625" height="330" alt="WAU_Setup_CommandAddon" src="https://github.com/user-attachments/assets/3082db3a-1c43-4f69-97df-9aa94ba99fc9" />
 1. Wwiseを起動して、任意のプロジェクトを開く。
 1. 上部のメインメニューもしくは各オブジェクトを右クリックしたメニュー内にあるWwiseUtilityから使いたい機能を選べばOK :+1:
+	<img width="781" height="816" alt="WAU_Setup_AuthoringTool" src="https://github.com/user-attachments/assets/09854642-2c38-4e60-9075-fde124ce0d8c" />
 
 ## Setup
 ### Using EXE
