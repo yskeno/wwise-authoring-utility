@@ -6,15 +6,20 @@
 
 ## Functions
 * Connect/Disconnect to Localhost without opening RemoteConnection dialog.
+![WAU_ConnectToLocalhost-ezgif](https://github.com/user-attachments/assets/3a10d16f-ef84-4f2d-a41b-0cfd9a4ca730)
 
-* Create Rondom/Sequence/Blend/Switch container(s) with selected objects.
+* Create Rondom/Sequence/Blend/Switch container(s) with selected objects.\
+  It supports asset names with numeric suffixes.
+![WAU_CreateContainer-ezgif](https://github.com/user-attachments/assets/57e77f2d-305a-45d1-a8f4-1cb17ff8a6a4)
 
-* Auto assign objects to switch in Switch Container.
+* Auto assign objects to switch in Switch Container.\
+  It supports asset names structured as "common string" + "switch name" + "optional suffix".
+![WAU_AssignSwitch-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/98dbb309-bc56-4db0-ab92-3c0811e74c6e)
 
 \
 ****English version below.***
 ## セットアップ
-1. Python3.10以上をインストールする。
+1. Python3.10 ～ 3.13のいずれかをインストールする。
 1. コマンドプロンプトで以下のコマンドを実行し、PythonでWAAPIを使うための初期セットアップを完了する。[^1]\
 参考: [Python (Waapi-Client) - Remote Procedure Call(プロジェクトの初期化)](https://www.audiokinetic.com/ja/public-library/2024.1.9_8920/?source=SDK&id=waapi_client_python_rpc.html#waapi_client_python_rpc_init)
 	* Windows
