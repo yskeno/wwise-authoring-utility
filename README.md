@@ -13,8 +13,8 @@
 ![WAU_CreateContainer-ezgif](https://github.com/user-attachments/assets/57e77f2d-305a-45d1-a8f4-1cb17ff8a6a4)
 
 * Auto assign objects to switch in Switch Container.\
-  It supports asset names structured as "common string" + "switch name" + "optional suffix".
-![WAU_AssignSwitch-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/98dbb309-bc56-4db0-ab92-3c0811e74c6e)
+  It supports asset names structured as "common string" + "switch name" + "optional numeric suffix".
+![WAU_AssignSwitch-ezgif](https://github.com/user-attachments/assets/1a7a4779-3872-4417-b575-5af91ed834ed)
 
 \
 ****English version below.***
